@@ -1,0 +1,24 @@
+{
+  "source": {
+    "include": ["./src/Framework"],
+    "includePattern": ".js$"
+  },
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "opts": {
+    "template": "node_modules/tui-jsdoc-template",
+    "encoding": "utf8",
+    "readme": "./readme.md",
+    "destination": "src/Docs/",
+    "recurse": true
+  },
+  "templates": {
+    "logo": {
+      "url": "https://dkaresearchcenter.com/wp-content/uploads/2020/06/DKAsaa.png",
+      "width": "160px",
+      "height": "70px",
+      "link": "https://github.com/nhnent/tui.jsdoc-template"
+    }
+  }
+}
