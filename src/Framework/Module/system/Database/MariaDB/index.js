@@ -4,7 +4,7 @@ import {Server, Options, Functions} from "./../../index.module.d";
 import {join} from "path";
 import mysqldump from 'mysqldump';
 import _ from "lodash";
-import {existsSync} from "fs";
+import {existsSync, mkdirSync} from "fs";
 
 /**
  * Functions Fot Class Mysql Database In Framework
@@ -70,7 +70,7 @@ class MariaDB {
      */
     constructor(options) {
         this.options = _.extend({
-            engine : MariaDB.MARIADB_POOL,
+            engine : MariaDB.MARIADB_CREATECONNECTION,
             host : "localhost",
             user : "root",
             password : "",
@@ -334,7 +334,7 @@ class MariaDB {
      * @description
      */
     Export = async () => {
-        const backupPath = Server.CONFIG.options.backupDir;
+        const backupPath = (Server.CONFIG === undefined) ? join(require.main.filename, "./../Backup") : Server.CONFIG.options.backupDir;
         const mDate = new Date();
         const filename = join(backupPath, `./${this.options.host}.${this.options.database}.${mDate.getDate()}-${mDate.getMonth()}-${mDate.getFullYear()}.sql.gz`);
         return await new Promise(async (resolve, rejected) => {
@@ -375,8 +375,12 @@ class MariaDB {
                     status : false,
                     code : 500,
                     msg : "Error Detected",
-                    error : "Folder Backup Not Detected"
-                })
+                    error : `Folder Backup Not Detected in "${backupPath}". Please Create Folder Backup First`
+                });
+                /*mkdirSync(backupPath, {
+                    mode : '0777'
+                })*/
+
             }
 
 
@@ -486,7 +490,6 @@ class MariaDB {
                                                         msg: `Success`,
                                                         data: rows
                                                     };
-
                                                     await resolve(this.returnedResult);
                                                 } else {
                                                     this.returnedResult = {
@@ -506,11 +509,12 @@ class MariaDB {
                                                 }
                                                 await rejected(this.returnedResult);
                                             }).finally(() => {
-                                                conn.release();
+                                                conn.end();
                                             });
                                         /** End Create A Query  **/
                                     })
                                     .catch(async (error) => {
+                                        await conn.end();
                                         await rejected(error);
                                     })
                             }else{
@@ -525,7 +529,7 @@ class MariaDB {
                                                 data: rows
                                             };
                                             await resolve(this.returnedResult);
-                                        } else {
+                                        }else {
                                             this.returnedResult = {
                                                 status: false,
                                                 code: 404,
@@ -541,9 +545,10 @@ class MariaDB {
                                             msg: "Error Detected",
                                             error: err
                                         }
+
                                         await rejected(this.returnedResult);
-                                    }).finally(() => {
-                                        conn.release();
+                                    }).finally(async () => {
+                                        await conn.end();
                                     });
                                 /** End Create A Query  **/
                             }
@@ -595,7 +600,7 @@ class MariaDB {
                                                 }
                                                 await rejected(this.returnedResult);
                                             }).finally(() => {
-                                                conn.release();
+                                                conn.end();
                                             });
                                         /** End Create A Query  **/
                                     })
@@ -613,6 +618,7 @@ class MariaDB {
                                                 msg: `Success`,
                                                 data: rows
                                             };
+                                            conn.end();
                                             await resolve(this.returnedResult);
                                         } else {
                                             this.returnedResult = {
@@ -621,6 +627,7 @@ class MariaDB {
                                                 msg: `Not Found`,
                                                 data : rows
                                             };
+                                            conn.end();
                                             await rejected(this.returnedResult);
                                         }
 
@@ -631,9 +638,10 @@ class MariaDB {
                                             msg: "Error Detected",
                                             error: err
                                         }
+                                        conn.end();
                                         await rejected(this.returnedResult);
                                     }).finally(() => {
-                                        conn.release();
+                                        conn.end();
                                     });
                                 /** End Create A Query  **/
                             }
@@ -649,8 +657,7 @@ class MariaDB {
 
                     break;
                 default:
-
-                    this.DBInstance.getConnection()
+                    this.DBInstance
                         .then(async (conn) => {
                             if (this.options.autoBackup){
                                 this.Export()
@@ -684,7 +691,7 @@ class MariaDB {
                                                 }
                                                 await rejected(this.returnedResult);
                                             }).finally(() => {
-                                                conn.release();
+                                                conn.end();
                                             });
                                         /** End Create A Query  **/
                                     })
@@ -702,6 +709,7 @@ class MariaDB {
                                                 msg: `Success`,
                                                 data: rows
                                             };
+                                            conn.end();
                                             await resolve(this.returnedResult);
                                         } else {
                                             this.returnedResult = {
@@ -720,9 +728,9 @@ class MariaDB {
                                             error: err
                                         }
                                         await rejected(this.returnedResult);
-                                    }).finally(() => {
-                                        conn.release();
-                                    });
+                                    }).finally(async() => {
+                                        await conn.end();
+                                    })
                                 /** End Create A Query  **/
                             }
                         }).catch(async (error) => {
@@ -733,7 +741,7 @@ class MariaDB {
                             error: error
                         }
                         await rejected(this.returnedResult);
-                    });
+                    })
 
                     break;
             }

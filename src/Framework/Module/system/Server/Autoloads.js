@@ -32,14 +32,14 @@ const Autoload = async () => {
                         /* console.log(AppProjectName + stats.isDirectory()) */
                         if (stats.isDirectory()){
                             /** Check Configuration **/
-                            let AppFile = join(AppProjectName, "./app.js");
+                            let AppFile = join(AppProjectName, "./index.js");
 
                             if (existsSync(AppFile)){
-
+                                /** If AppFile Is Exists **/
                                 let AppFileModule = require(AppFile).default;
-
+                                /** Check App File is Object Format {JSON}**/
                                 if (AppFileModule instanceof Object){
-
+                                    /** Checking Server Enabled **/
                                     if (AppFileModule.serverEnabled){
                                         await DKA.Server(_.extend({
                                             serverName : file,

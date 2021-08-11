@@ -47,7 +47,7 @@ class index {
      * @param {Number} settings.interval
      */
     open = async (pin, settings = this.config) =>
-        new Promise( async (resolve) => {
+        new Promise( async (resolve, rejected) => {
             /** Get Setialize for resolve chaining data proccess
              * set Config data for Setting user Connection Chaining Data
              * **/
@@ -64,9 +64,11 @@ class index {
             }
 
             this.mGpio = await gpio.export(pin, mDirection )
-            this.mGpio.close = async(callback) => {
+            this.mGpio.close = async(callback = false) => {
                 this.mGpio.reset();
-                this.mGpio.unexport(callback);
+                if (callback){
+                    this.mGpio.unexport(callback);
+                }
             };
 
             this.mGpio.on = async(event = Options.GPIO_EVENT_CHANGE) => {
@@ -84,7 +86,9 @@ class index {
             }
 
             this.mGpioArray.push(this.mGpio);
-        });
+        }).catch(async (error) => {
+            console.log(error);
+        })
 }
 
 export default index;

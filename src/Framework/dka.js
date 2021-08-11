@@ -13,7 +13,7 @@ const options = yargs
         })
     })
     .command("dev", "Run Debug Project Serve", function (argv) {
-
+        nodemon()
     })
     .command("build", "create Release Project", function (argv) {
 

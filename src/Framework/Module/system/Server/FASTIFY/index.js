@@ -74,7 +74,6 @@ export default (config) => new Promise(async (resolve, rejected) => {
     return AppEngine;
 }).then( async (AppEngine) => {
     const appCookie = require('fastify-cookie');
-
     await AppEngine.register(appCookie, {
         secret: config.settings.secretKey,
         path : "/"
@@ -96,7 +95,6 @@ export default (config) => new Promise(async (resolve, rejected) => {
     await AppEngine.register(require("fastify-formbody"));
     return AppEngine;
 }).then(async (AppEngine) => {
-
     if (existsSync(config.options.assetsDir)){
         await AppEngine.register(require("fastify-static"), {
             root : config.options.assetsDir,
@@ -105,7 +103,6 @@ export default (config) => new Promise(async (resolve, rejected) => {
     }else{
         console.log(chalk.red(` Folder "assetsDir" Tidak Ditemukan. Harap Mendeklarasikan "options.assetsDir" Di Dalam Project "${ config.serverName}" Atau Membuat Folder "Assets" di Folder Project`))
     }
-
     if (existsSync(config.options.assetsDir)){
         await AppEngine.register(require("fastify-static"), {
             root : config.options.uploadDir,

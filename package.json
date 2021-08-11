@@ -1,8 +1,8 @@
 {
   "name": "dkaframework",
-  "version": "1.0.107",
+  "version": "1.0.113",
   "description": "DKA WebServer Command Line Interface",
-  "main": "./dist/Framework/Module/system/index.module.d.js",
+  "main": "dist/Framework/Module/system/index.module.d.js",
   "author": "Yovangga Anandhika",
   "license": "MIT",
   "private": false,
@@ -10,12 +10,11 @@
     "url": "git://github.com/YovanggaAnandhika/DKAFramework.git"
   },
   "bin": {
-    "dka": "src/Framework/dka.js"
+    "dka": "dist/Framework/dka.js"
   },
   "scripts": {
     "docs": "jsdoc -c jsdoc.json --verbose",
-    "compile": "babel --source-maps --copy-files --no-copy-ignored -d dist/ src/",
-    "publish": "compile && npm publish"
+    "compile": "babel --source-maps --copy-files --no-copy-ignored -d dist/ src/"
   },
   "prepublish": "yarn run compile",
   "devDependencies": {
