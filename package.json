@@ -1,6 +1,6 @@
 {
   "name": "dkaframework",
-  "version": "1.0.115",
+  "version": "1.0.118",
   "description": "DKA WebServer Command Line Interface",
   "main": "dist/Framework/Module/system/index.module.d.js",
   "author": "Yovangga Anandhika",
@@ -9,13 +9,23 @@
   "repository": {
     "url": "git://github.com/YovanggaAnandhika/DKAFramework.git"
   },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://www.opensource.org/licenses/mit-license.php"
+    },
+    {
+      "type": "Apache-2.0",
+      "url": "https://opensource.org/licenses/apache2.0.php"
+    }
+  ],
   "bin": {
     "dka": "dist/Framework/dka.js"
   },
   "scripts": {
     "docs": "jsdoc -c jsdoc.json --verbose",
     "client-compile": "webpack",
-    "compile": "babel --source-maps --copy-files --no-copy-ignored -d dist/ src/"
+    "compile": "babel --ignore src/Framework/Client --source-maps --copy-files --no-copy-ignored -d dist/ src/"
   },
   "prepublish": "yarn run compile",
   "devDependencies": {
@@ -51,7 +61,7 @@
     "js-cookie": "^3.0.0",
     "jsdoc": "^3.6.4",
     "jsdoc-template": "^1.2.0",
-    "jsdom": "^16.5.2",
+    "jsdom": "^17.0.0",
     "mini-css-extract-plugin": "^1.4.0",
     "moment": "^2.29.1",
     "sainte-lague": "^2.1.1",
@@ -61,11 +71,10 @@
     "webpack-cli": "^4.7.2"
   },
   "dependencies": {
-    "firebase": "^8.3.2",
     "app-root-path": "^3.0.0",
     "art-template": "^4.13.2",
+    "axios": "^0.21.1",
     "backbone": "^1.4.0",
-    "browser-sync": "^2.26.7",
     "browsersync": "^0.0.1-security",
     "bufferutil": "^4.0.3",
     "chalk": "^4.1.0",
@@ -74,6 +83,7 @@
     "cli-progress": "^3.6.0",
     "color-it": "^1.2.12",
     "commander": "^7.2.0",
+    "crypto-js": "^4.1.1",
     "default-gateway": "^6.0.3",
     "ejs": "^3.1.6",
     "emojic": "^1.1.16",
@@ -99,6 +109,7 @@
     "fastify-socket.io": "^1.0.2",
     "fastify-static": "^4.0.1",
     "fastify-vhost": "^1.2.1",
+    "firebase": "^8.3.2",
     "firewall": "^0.0.5",
     "formidable": "^1.2.2",
     "getmac": "^5.20.0",
@@ -120,10 +131,11 @@
     "nodemon": "^2.0.7",
     "pace-js": "^1.2.4",
     "parent-module": "^2.0.0",
-    "pdfkit": "^0.11.0",
-    "pdfmake": "^0.1.65",
+    "pidusage": "^2.0.21",
     "pino-pretty": "^4.7.1",
     "point-of-view": "^4.14.0",
+    "public-ip": "^4.0.4",
+    "qs": "^6.10.1",
     "react": "^17.0.2",
     "react-bootstrap": "^1.5.2",
     "react-bootstrap-icons": "^1.4.0",
@@ -136,7 +148,6 @@
     "ts-node": "^9.1.1",
     "tui-jsdoc-template": "^1.2.2",
     "typescript": "^4.2.3",
-    "uglify-es": "^3.3.9",
     "utf-8-validate": "^5.0.4",
     "virustotal-api": "^1.1.2",
     "winston": "^3.3.3",

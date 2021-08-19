@@ -5,6 +5,7 @@ const globHandler = async (app, opts, next) => {
 
     const path = require("path");
     const fs = require("fs");
+    const io = app.io;
 
     /** Callback The Not Found Page **/
     await app.setNotFoundHandler((request, response) => {
@@ -12,7 +13,12 @@ const globHandler = async (app, opts, next) => {
         response
             .type('text/html')
             .send(html)
-    })
+    });
+
+    await io.of("/dka")
+        .on('connection', async (io) => {
+        console.info(`dkaframework :: client is Connected ${io.id}`);
+    });
 
     next();
 }
