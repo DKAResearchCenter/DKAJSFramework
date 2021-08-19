@@ -16,7 +16,7 @@ const Functions = {
     Upload : Upload,
     Extend : Extend,
     Hardware : Hardware,
-    Networking : Networking
+    Networking : Networking,
     /*Cookies : Cookies*/
 };
 

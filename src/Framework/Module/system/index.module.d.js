@@ -40,6 +40,7 @@ import Config from "./Config";
 import Database from "./Database";
 import Router from "./Router";
 import Options from "./Options";
+import Api from "./Api";
 
 /**
 /**
@@ -53,7 +54,8 @@ const DKA = {
     Database: Database,
     Router: Router,
     Server : Server,
-    Options : Options
+    Options : Options,
+    Api : Api
 };
 
 
@@ -63,6 +65,6 @@ global.DKAnum = 0;
 global.DKAServerConfig = [];
 
 export default DKA;
-export {Functions, Security, Config, Database, Router, Server, Options};
+export {Functions, Security, Config, Database, Router, Server, Options, Api};
 
 

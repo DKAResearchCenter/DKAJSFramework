@@ -3,6 +3,7 @@
 import Options from "./../../../Options"
 import _ from "lodash";
 import gpio from "gpio";
+import { execSync } from "child_process";
 
 class index {
 
@@ -29,10 +30,12 @@ class index {
     constructor(config) {
         this.config = _.extend({
             enabled : true,
+            engine : Options.RASPBERRYPI_CORE_CLI,
             setDefaultLower : false,
             interval : 200,
             direction : Options.GPIO_DIR_OUT
         }, config)
+
 
     };
 
@@ -47,45 +50,53 @@ class index {
      * @param {Number} settings.interval
      */
     open = async (pin, settings = this.config) =>
-        new Promise( async (resolve, rejected) => {
-            /** Get Setialize for resolve chaining data proccess
-             * set Config data for Setting user Connection Chaining Data
-             * **/
-            const mDirection = {
-                direction : settings.direction,
-                ready : async() => {
-                    resolve(this.mGpio);
-                }
-            };
+        new Promise( async (resolve) => {
 
-            /** Detect The mDirection out get interval duration **/
-            if (settings === Options.GPIO_DIR_OUT){
-                mDirection.interval = settings.interval
+            switch (this.config.engine){
+                case Options.RASPBERRYPI_CORE_CLI :
+
+                    break;
+                case Options.RASPBERRY_CORE_GPIO :
+                    /** Get Setialize for resolve chaining data proccess
+                     * set Config data for Setting user Connection Chaining Data
+                     * **/
+                    const mDirection = {
+                        direction : settings.direction,
+                        ready : async() => {
+                            resolve(this.mGpio);
+                        }
+                    };
+
+                    /** Detect The mDirection out get interval duration **/
+                    if (settings === Options.GPIO_DIR_OUT){
+                        mDirection.interval = settings.interval
+                    }
+
+                    this.mGpio = await gpio.export(pin, mDirection );
+                    this.mGpio.close = async(callback = false) => {
+                        this.mGpio.reset();
+                        if (callback){
+                            this.mGpio.unexport(callback);
+                        }
+                    };
+                    this.mGpio.on = async(event = Options.GPIO_EVENT_CHANGE) => {
+                        new Promise(async (resolve) => {
+                            this.mEvent = await this.mGpio.on(event, async(val) => {
+                                (this.config.setDefaultLower) ? resolve({
+                                    function : this.mEvent,
+                                    value : (val === 1) ? resolve(0) : resolve(1)
+                                }) : resolve({
+                                    function : this.mEvent,
+                                    value : val
+                                })
+                            })
+                        });
+                    }
+                    this.mGpioArray.push(this.mGpio);
+                    break;
+                default :
+
             }
-
-            this.mGpio = await gpio.export(pin, mDirection )
-            this.mGpio.close = async(callback = false) => {
-                this.mGpio.reset();
-                if (callback){
-                    this.mGpio.unexport(callback);
-                }
-            };
-
-            this.mGpio.on = async(event = Options.GPIO_EVENT_CHANGE) => {
-                new Promise(async (resolve) => {
-                    this.mEvent = await this.mGpio.on(event, async(val) => {
-                        (this.config.setDefaultLower) ? resolve({
-                            function : this.mEvent,
-                            value : (val === 1) ? resolve(0) : resolve(1)
-                        }) : resolve({
-                            function : this.mEvent,
-                            value : val
-                        })
-                    })
-                });
-            }
-
-            this.mGpioArray.push(this.mGpio);
         }).catch(async (error) => {
             console.log(error);
         })

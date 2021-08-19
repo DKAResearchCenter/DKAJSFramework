@@ -528,6 +528,7 @@ class MariaDB {
                                                 msg: `Success`,
                                                 data: rows
                                             };
+                                            conn.release();
                                             await resolve(this.returnedResult);
                                         }else {
                                             this.returnedResult = {
@@ -536,6 +537,7 @@ class MariaDB {
                                                 msg: `Not Found`
                                             };
                                             await rejected(this.returnedResult);
+                                            conn.release()
                                         }
 
                                     }).catch(async (err) => {
@@ -545,10 +547,8 @@ class MariaDB {
                                             msg: "Error Detected",
                                             error: err
                                         }
-
+                                        conn.release();
                                         await rejected(this.returnedResult);
-                                    }).finally(async () => {
-                                        await conn.end();
                                     });
                                 /** End Create A Query  **/
                             }
