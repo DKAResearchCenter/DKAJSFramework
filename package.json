@@ -1,6 +1,6 @@
 {
   "name": "dkaframework",
-  "version": "1.0.118",
+  "version": "1.0.120",
   "description": "DKA WebServer Command Line Interface",
   "main": "dist/Framework/Module/system/index.module.d.js",
   "author": "Yovangga Anandhika",

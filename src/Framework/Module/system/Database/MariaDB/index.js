@@ -516,7 +516,11 @@ class MariaDB {
                                                     status: false,
                                                     code: 505,
                                                     msg: "Error Detected",
-                                                    error: err
+                                                    error: {
+                                                        errorMsg : err.text,
+                                                        errorCode : err.code,
+                                                        errNo : err.errno
+                                                    }
                                                 }
                                                 await rejected(this.returnedResult);
                                             }).finally(() => {
@@ -564,7 +568,11 @@ class MariaDB {
                                             status: false,
                                             code: 505,
                                             msg: "Error Detected",
-                                            error: err
+                                            error: {
+                                                errorMsg : err.text,
+                                                errorCode : err.code,
+                                                errNo : err.errno
+                                            }
                                         }
                                         conn.release();
                                         await rejected(this.returnedResult);
@@ -730,7 +738,11 @@ class MariaDB {
                                                     status: false,
                                                     code: 505,
                                                     msg: "Error Detected",
-                                                    error: err
+                                                    error: {
+                                                        errorMsg : err.text,
+                                                        errorCode : err.code,
+                                                        errNo : err.errno
+                                                    }
                                                 }
                                                 await rejected(this.returnedResult);
                                             }).finally(() => {
@@ -776,7 +788,11 @@ class MariaDB {
                                             status: false,
                                             code: 505,
                                             msg: "Error Detected",
-                                            error: err
+                                            error: {
+                                                errorMsg : err.text,
+                                                errorCode : err.code,
+                                                errNo : err.errno
+                                            }
                                         }
                                         await rejected(this.returnedResult);
                                     }).finally(async() => {
