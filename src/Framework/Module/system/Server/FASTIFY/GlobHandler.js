@@ -15,6 +15,10 @@ const globHandler = async (app, opts, next) => {
             .send(html)
     });
 
+    await app.setErrorHandler(async (error, request, response) => {
+        console.error(error);
+    })
+
     await io.of("/dka")
         .on('connection', async (io) => {
         console.info(`dkaframework :: client is Connected ${io.id}`);

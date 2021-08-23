@@ -1,8 +1,12 @@
-import Banking from "./Banking";
+import Payment from "./Payment";
+import Expedition from "./Expedition";
+import Transportation from "./Transportation";
 
 const  ThirdParty = {
-    Banking : Banking
+    Payment : Payment,
+    Expedition : Expedition,
+    Transportation : Transportation
 };
 
 export default ThirdParty;
-export { Banking }
+export { Payment, Expedition, Transportation }
