@@ -495,8 +495,8 @@ class MariaDB {
                                                                 msg: `Success`,
                                                                 data: rows,
                                                                 time_execute : {
-                                                                    timestamp : moment(rowsTime[0].time_execute).toISOString(),
-                                                                    human : moment(rowsTime[0].time_execute).format('LLL'),
+                                                                    timestamp : moment.unix(rowsTime[0].time_execute).toISOString(),
+                                                                    human : moment.unix(rowsTime[0].time_execute).format('LLL'),
                                                                     unix : rowsTime[0].time_execute
                                                                 }
                                                             };

@@ -43,6 +43,7 @@ const Server = async (config) => {
         app : false,
         /** Setting System Settings **/
         settings : {
+            firewall : [],
             /** Ngrok Tunneling **/
             ngrok : {
                 enabled : false,
@@ -134,7 +135,7 @@ const Server = async (config) => {
                         }else{
                             if (existsSync(configuration.options.appDir)){
                                 await AppEngine.register(async (app, opts, next) => {
-                                    const mApp = await require("./FASTIFY/GlobHooks").default(app);
+                                    const mApp = await require("./FASTIFY/GlobHooks").default(app, configuration);
                                     await mApp.register(require("./FASTIFY/GlobHandler").default);
                                     await mApp.register(require(configuration.options.appDir));
                                     await next();

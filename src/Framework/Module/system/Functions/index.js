@@ -8,6 +8,7 @@ import Upload from "./Upload"
 import Extend from "./Extended";
 import Hardware from "./Hardware";
 import Networking from "./Networking";
+import File from "./File";
 
 const Functions = {
     Sessions : Sessions,
@@ -17,8 +18,9 @@ const Functions = {
     Extend : Extend,
     Hardware : Hardware,
     Networking : Networking,
+    File : File
     /*Cookies : Cookies*/
 };
 
 export default Functions;
-export {Sessions, Encryption, AntiVirus, Upload, Extend, Hardware, Networking };
+export {Sessions, Encryption, AntiVirus, Upload, Extend, Hardware, Networking, File };

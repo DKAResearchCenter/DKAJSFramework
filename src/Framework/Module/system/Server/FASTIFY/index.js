@@ -13,14 +13,16 @@ export default (config) => new Promise(async (resolve, rejected) => {
     if (config.serverState === Options.SERVER_STATE_DEVELOPMENT){
         /** Memuat Fastify Module Dengan logger True **/
         const AppEngine = require("fastify")({
-            logger : {level: 'info'}
+            logger : {level: 'info'},
+            trustProxy: true
         });
         /** Melakukan Resolve Chain Promise **/
         resolve(AppEngine);
     }else if (config.serverState === Options.SERVER_STATE_PRODUCTION) {
         /** Memuat Fastify Module Dengan logger True **/
         const AppEngine = require("fastify")({
-            logger : {level: 'warn'}
+            logger : {level: 'warn'},
+            trustProxy : true
         });
         /** Melakukan Resolve Chain Promise **/
         resolve(AppEngine);

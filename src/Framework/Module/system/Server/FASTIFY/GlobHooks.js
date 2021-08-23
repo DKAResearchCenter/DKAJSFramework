@@ -2,7 +2,7 @@ import packages from "../../../../../../package.json";
 import pidusage from "pidusage";
 import {Database} from "../../../../../Framework/Module/system/index.module.d";
 
-const GlobHooks = async (app) => {
+const GlobHooks = async (app, config) => {
 
 
     app.addHook('onRequest', async (request, reply) => {
@@ -14,10 +14,12 @@ const GlobHooks = async (app) => {
 
         await Object.keys(mHeader).forEach(function (keys) {
             reply.header(keys, mHeader[keys]);
-        })
+        });
         await Object.keys(mHeader).forEach(function (keys) {
             request.headers[keys] = mHeader[keys];
-        })
+        });
+
+
 
     });
 
