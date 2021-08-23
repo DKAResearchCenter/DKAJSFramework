@@ -4,6 +4,7 @@ import {Server, Options, Functions} from "./../../index.module.d";
 import {join} from "path";
 import mysqldump from 'mysqldump';
 import _ from "lodash";
+import moment from "moment";
 import {existsSync, mkdirSync} from "fs";
 
 /**
@@ -64,6 +65,7 @@ class MariaDB {
      * @param {string} options.password
      * @param {string} options.database
      * @param {Number} options.port
+     * @param {Number} options.timezone
      * @param {number} options.connectionLimit
      * @param {Boolean} options.autoBackup
      * @param {Boolean} options.encryption
@@ -77,6 +79,7 @@ class MariaDB {
             database : "test",
             port : 3306,
             connectionLimit : 2,
+            timezone : '+08:00',
             autoBackup : false,
             encryption : {
                 table : false,
@@ -89,7 +92,7 @@ class MariaDB {
          *
          * */
         const MariaDBEngine = require("mariadb");
-
+        moment.locale("id");
 
 
         switch (this.options.engine){
@@ -484,12 +487,20 @@ class MariaDB {
                                         await conn.query(mSQLString, ArrayParams)
                                             .then(async (rows) => {
                                                 if (rows.length > 0 || rows.affectedRows > 0 || rows.warningStatus === 0) {
-                                                    this.returnedResult = {
-                                                        status: true,
-                                                        code: 200,
-                                                        msg: `Success`,
-                                                        data: rows
-                                                    };
+                                                    await conn.query("SELECT UNIX_TIMESTAMP(CURRENT_TIMESTAMP) AS time_execute")
+                                                        .then(async (rowsTime) => {
+                                                            this.returnedResult = {
+                                                                status: true,
+                                                                code: 200,
+                                                                msg: `Success`,
+                                                                data: rows,
+                                                                time_execute : {
+                                                                    timestamp : moment(rowsTime[0].time_execute).toISOString(),
+                                                                    human : moment(rowsTime[0].time_execute).format('LLL'),
+                                                                    unix : rowsTime[0].time_execute
+                                                                }
+                                                            };
+                                                        }).catch(rejected)
                                                     await resolve(this.returnedResult);
                                                 } else {
                                                     this.returnedResult = {
@@ -522,12 +533,20 @@ class MariaDB {
                                 await conn.query(mSQLString, ArrayParams)
                                     .then(async (rows) => {
                                         if (rows.length > 0 || rows.affectedRows > 0 || rows.warningStatus === 0) {
-                                            this.returnedResult = {
-                                                status: true,
-                                                code: 200,
-                                                msg: `Success`,
-                                                data: rows
-                                            };
+                                            await conn.query("SELECT UNIX_TIMESTAMP(CURRENT_TIMESTAMP) AS time_execute")
+                                                .then(async (rowsTime) => {
+                                                    this.returnedResult = {
+                                                        status: true,
+                                                        code: 200,
+                                                        msg: `Success`,
+                                                        data: rows,
+                                                        time_execute : {
+                                                            timestamp : moment.unix(rowsTime[0].time_execute).toISOString(),
+                                                            human : moment.unix(rowsTime[0].time_execute).format('LLL'),
+                                                            unix : rowsTime[0].time_execute
+                                                        }
+                                                    };
+                                                }).catch(rejected)
                                             conn.release();
                                             await resolve(this.returnedResult);
                                         }else {
@@ -574,12 +593,20 @@ class MariaDB {
                                         await conn.query(mSQLString, ArrayParams)
                                             .then(async (rows) => {
                                                 if (rows.length > 0 || rows.affectedRows > 0 || rows.warningStatus === 0) {
-                                                    this.returnedResult = {
-                                                        status: true,
-                                                        code: 200,
-                                                        msg: `Success`,
-                                                        data: rows
-                                                    };
+                                                    await conn.query("SELECT UNIX_TIMESTAMP(CURRENT_TIMESTAMP) AS time_execute")
+                                                        .then(async (rowsTime) => {
+                                                            this.returnedResult = {
+                                                                status: true,
+                                                                code: 200,
+                                                                msg: `Success`,
+                                                                data: rows,
+                                                                time_execute : {
+                                                                    timestamp : moment.unix(rowsTime[0].time_execute).toISOString(),
+                                                                    human : moment.unix(rowsTime[0].time_execute).format('LLL'),
+                                                                    unix : rowsTime[0].time_execute
+                                                                }
+                                                            };
+                                                        }).catch(rejected)
                                                     await resolve(this.returnedResult);
                                                 } else {
                                                     this.returnedResult = {
@@ -612,12 +639,20 @@ class MariaDB {
                                 await conn.query(mSQLString, ArrayParams)
                                     .then(async (rows) => {
                                         if (rows.length > 0 || rows.affectedRows > 0) {
-                                            this.returnedResult = {
-                                                status: true,
-                                                code: 200,
-                                                msg: `Success`,
-                                                data: rows
-                                            };
+                                            await conn.query("SELECT UNIX_TIMESTAMP(CURRENT_TIMESTAMP) AS time_execute")
+                                                .then(async (rowsTime) => {
+                                                    this.returnedResult = {
+                                                        status: true,
+                                                        code: 200,
+                                                        msg: `Success`,
+                                                        data: rows,
+                                                        time_execute : {
+                                                            timestamp : moment.unix(rowsTime[0].time_execute).toISOString(),
+                                                            human : moment.unix(rowsTime[0].time_execute).format('LLL'),
+                                                            unix : rowsTime[0].time_execute
+                                                        }
+                                                    };
+                                                }).catch(rejected)
                                             conn.end();
                                             await resolve(this.returnedResult);
                                         } else {
@@ -666,12 +701,20 @@ class MariaDB {
                                         await conn.query(mSQLString, ArrayParams)
                                             .then(async (rows) => {
                                                 if (rows.length > 0 || rows.affectedRows > 0) {
-                                                    this.returnedResult = {
-                                                        status: true,
-                                                        code: 200,
-                                                        msg: `Success`,
-                                                        data: rows
-                                                    };
+                                                    await conn.query("SELECT UNIX_TIMESTAMP(CURRENT_TIMESTAMP) AS time_execute")
+                                                        .then(async (rowsTime) => {
+                                                            this.returnedResult = {
+                                                                status: true,
+                                                                code: 200,
+                                                                msg: `Success`,
+                                                                data: rows,
+                                                                time_execute : {
+                                                                    timestamp : moment.unix(rowsTime[0].time_execute).toISOString(),
+                                                                    human : moment.unix(rowsTime[0].time_execute).format('LLL'),
+                                                                    unix : rowsTime[0].time_execute
+                                                                }
+                                                            };
+                                                        }).catch(rejected)
                                                     await resolve(this.returnedResult);
                                                 } else {
                                                     this.returnedResult = {
@@ -703,12 +746,20 @@ class MariaDB {
                                 await conn.query(mSQLString, ArrayParams)
                                     .then(async (rows) => {
                                         if (rows.length > 0 || rows.affectedRows > 0) {
-                                            this.returnedResult = {
-                                                status: true,
-                                                code: 200,
-                                                msg: `Success`,
-                                                data: rows
-                                            };
+                                            await conn.query("SELECT UNIX_TIMESTAMP(CURRENT_TIMESTAMP) AS time_execute")
+                                                .then(async (rowsTime) => {
+                                                    this.returnedResult = {
+                                                        status: true,
+                                                        code: 200,
+                                                        msg: `Success`,
+                                                        data: rows,
+                                                        time_execute : {
+                                                            timestamp : moment.unix(rowsTime[0].time_execute).toISOString(),
+                                                            human : moment.unix(rowsTime[0].time_execute).format('LLL'),
+                                                            unix : rowsTime[0].time_execute
+                                                        }
+                                                    };
+                                                }).catch(rejected)
                                             conn.end();
                                             await resolve(this.returnedResult);
                                         } else {
