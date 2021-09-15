@@ -1,10 +1,12 @@
 import BRI from "./BRI";
 import BNI from "./BNI";
+import Mandiri from "./MANDIRI";
 
 const Banking = {
     BRI : BRI,
-    BNI : BNI
+    BNI : BNI,
+    Mandiri : Mandiri
 };
 
 export default Banking;
-export { BRI, BNI };
+export { BRI, BNI, Mandiri };

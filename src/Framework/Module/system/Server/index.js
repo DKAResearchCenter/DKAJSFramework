@@ -4,6 +4,7 @@ import _ from 'lodash';
 import chalk from "chalk";
 import {existsSync} from "fs";
 import Options from "./../Options";
+import fsExtra from "fs-extra";
 
 import HTTPEngine from "./HTTP";
 import ReactEngine from "./REACT"
@@ -37,6 +38,8 @@ const Server = async (config) => {
         serverHost : "localhost",
         /** Server Port **/
         serverPort : 80,
+        /** Activated Https 2 Version **/
+        http2 : false,
         /** Activated Security System **/
         secure : false,
         /** Memulai System App Controller **/
@@ -67,7 +70,7 @@ const Server = async (config) => {
         }
     }, config);
 
-    Server.CONFIG = configuration
+    Server.CONFIG = configuration;
 
     const DKAServer = await new Promise(async (resolve, rejected) => {
         switch (configuration.serverEngine) {
@@ -88,11 +91,20 @@ const Server = async (config) => {
             case Options.FASTIFY_CORE_ENGINE :
                 //**************************************************/
                 if (configuration.serverEnabled){
-                    FastifyEngine(configuration).then(async (AppEngine) => {
-                        await resolve(AppEngine);
-                    }).catch(async (error) => {
-                        await rejected(error);
+                    const AppEngine = await FastifyEngine(configuration);
+
+                    await AppEngine.register(async (app, opts, next) => {
+                        const mAppPointing = (configuration.app) ? configuration.app
+                            : (existsSync(configuration.options.appDir) ? configuration.options.appDir : async (app, opts, next) => {
+
+                                next();
+                            });
+                        let mApp = await require("./FASTIFY/GlobHandler").default(app, configuration);
+                        await mApp.register(mAppPointing);
+                        next();
                     });
+                    await resolve(AppEngine);
+
                 }else{
                     await rejected(`Project "${configuration.serverName}" Dinonaktifkan. Set "serverEnabled" ke "true" Untuk Mengaktifkan`);
                 }
@@ -107,71 +119,13 @@ const Server = async (config) => {
                 })
                 break;
             default :
-                FastifyEngine(configuration).then(async (AppEngine) => {
-                    await resolve(AppEngine);
-                }).catch(async (error) => {
-                    await rejected(error);
-                })
+                rejected(' Server Engine Unknown')
                 break;
         }
     });
-    const DKAPointing = await new Promise (async (resolve, rejected) => {
-        await DKAServer.then( async (AppEngine) => {
-            if (configuration.app != null){
-                switch (configuration.serverEngine) {
-                    case Options.EXPRESS_CORE_ENGINE :
-                        await AppEngine.use(configuration.app);
-                        await resolve(AppEngine);
-                        break;
-                    case Options.FASTIFY_CORE_ENGINE :
-                        if (configuration.app){
-                            await AppEngine.register(async (app, opts, next) => {
-                                const mApp = await require("./FASTIFY/GlobHooks").default(app);
-                                await mApp.register(require("./FASTIFY/GlobHandler").default);
-                                await mApp.register(configuration.app);
-                                await next();
-                            });
-                            await resolve(AppEngine);
-                        }else{
-                            if (existsSync(configuration.options.appDir)){
-                                await AppEngine.register(async (app, opts, next) => {
-                                    const mApp = await require("./FASTIFY/GlobHooks").default(app, configuration);
-                                    await mApp.register(require("./FASTIFY/GlobHandler").default);
-                                    await mApp.register(require(configuration.options.appDir));
-                                    await next();
-                                })
-                                await resolve(AppEngine);
-                            }else{
-                                await console.log(chalk.white("Directory `Controller` Not Exist. Please Make Dir in " + configuration.options.appDir + " "))
-                                await AppEngine.register(async (app, opts, next) => {
-                                    const mApp = await require("./FASTIFY/GlobHooks").default(app);
-                                    await mApp.register(require("./FASTIFY/GlobHandler").default);
-                                    await next();
-                                });
-                                await resolve(AppEngine);
-                            }
-                        }
-                        break;
-                    case Options.REACTJS_CORE_ENGINE :
-                        await ReactEngine(configuration, configuration.app)
-                        await resolve()
-                        break;
-                    case Options.RESTIFY_CORE_ENGINE :
-                        await resolve()
-                        break;
-                    default :
-                        await resolve()
-                        break;
-                }
-            }else{
-                resolve(AppEngine);
-            }
-        }).catch(async (error) => {
-            rejected(error);
-        });
-    })
+
     return await new Promise(async (resolve, rejected) => {
-        DKAPointing.then(async (AppEngine) => {
+        await DKAServer.then(async (AppEngine) => {
             switch (configuration.serverEngine) {
                 /** Aksi Yang Akan Terjadi Jika Jenis Core Engine Adalah Fastify **/
                 case Options.FASTIFY_CORE_ENGINE :
@@ -218,8 +172,9 @@ const Server = async (config) => {
                     rejected("Server Engine Not Found");
 
             }
+        }).catch(async (error) => {
+            rejected(error);
         });
-
     });
 
 };

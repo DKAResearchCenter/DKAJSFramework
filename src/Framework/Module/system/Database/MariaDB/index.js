@@ -203,7 +203,7 @@ class MariaDB {
 
         return this.#returnedResult;
     };
-
+    Buat = this.Create;
     /**
      * @param {String} TableName
      * @param {JSON} Rules
@@ -268,7 +268,7 @@ class MariaDB {
         return this.rawQuerySync(mSQL, []);
 
     }
-
+    Baca = this.Read;
     /**
      * @constructor
      * @param {String} TableName
@@ -303,6 +303,7 @@ class MariaDB {
 
         return this.rawQuerySync(mSQL, []);
     }
+    Ubah = this.Update;
 
     /**
      * @constructor
@@ -330,7 +331,7 @@ class MariaDB {
 
         return this.rawQuerySync(SqlScript, []);
     };
-
+    Hapus = this.Delete;
     /**
      * @constructor
      * @return {Promise<unknown>}
@@ -815,7 +816,7 @@ class MariaDB {
         });
 
     };
-
+    Sql = this.rawQuerySync;
 
 
 

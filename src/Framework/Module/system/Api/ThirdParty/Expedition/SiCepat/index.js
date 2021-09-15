@@ -17,7 +17,21 @@ class SiCepat {
         return 'http://apitrek.sicepat.com/';
     }
 
+    static get SICEPAT_EXPEDITION_LOCATION_ORIGIN(){
+        return 'origin';
+    }
 
+    static get SICEPAT_EXPEDITION_LOCATION_DESTINATION(){
+        return 'destination';
+    }
+
+
+    /**
+     *
+     * @param {{}} config Function For Configuration Api
+     * @param {String} config.state Function For Configuration Mode and URL
+     * @param {String} config.key Function For Configuration Key
+     */
     constructor(config) {
         this.config = _.extend({
             state : SiCepat.SICEPAT_EXPEDITION_DEVELOPMENT,
@@ -25,22 +39,41 @@ class SiCepat {
         }, config);
     }
 
-    origin = async() => {
+    LocationServices = async(mode = SiCepat.SICEPAT_EXPEDITION_LOCATION_ORIGIN) => {
         return new Promise(async (resolve, rejected) => {
-            const url = `${this.config.state}customer/origin`;
+            const url = (mode === SiCepat.SICEPAT_EXPEDITION_LOCATION_ORIGIN) ? `${this.config.state}customer/origin` : `${this.config.state}customer/destination`;
             axios.get(`${url}`, {
                 headers : {
                     'api-key' : this.config.key
                 }
             }).then(async (res) => {
-                resolve(res.data)
+                resolve(res.data.sicepat);
             }).catch(async (error) => {
-                rejected(_.extend({
-                    key : this.config.key
-                }, error.response.data))
+                rejected(error.response);
             });
         });
-    }
+    };
+
+    Price = async(origin, destination, weight) => {
+        return new Promise(async (resolve, rejected) => {
+            axios.get(`${this.config.state}customer/tariff`, {
+                headers : {
+                    'api-key' : this.config.key
+                },
+                params : {
+                    origin : origin,
+                    destination : destination,
+                    weight : weight
+                }
+            }).then(async (res) => {
+                resolve(res.data.sicepat);
+            }).catch(async (error) => {
+                rejected(error.response.data.sicepat);
+            });
+        });
+    };
+
+
 }
 
 export default SiCepat;
