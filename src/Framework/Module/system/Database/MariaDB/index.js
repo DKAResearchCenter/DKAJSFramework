@@ -112,7 +112,13 @@ class MariaDB {
 
     }
 
+    /**
+     * @deprecated please use CreateTable.
+     * @returns {Promise<void>}
+     */
+    init = async() => {
 
+    }
     /**
      * @constructor
      * @param {String} TableName
@@ -122,7 +128,7 @@ class MariaDB {
      * @returns {Promise<unknown> | JSON}
      * @description
      */
-    init = async (TableName, Rule) => {
+    CreateTable = async (TableName, Rule) => {
 
         /** Load Encryption**/
         const enc = await new Functions.Encryption.Crypto();

@@ -6,6 +6,7 @@ import MySQL from "./MySQL";
 import MariaDB from "./MariaDB";
 import MongoDB from "./MongoDB";
 import Oracle from "./Oracle";
+import POSTGRES from "./POSTGRES";
 
 /**
  * @param {{JSONDB : JSONDB, MySQL : MySQL, MariaDB : MariaDB, MongoDB : MongoDB, Oracle : Oracle}} Database
