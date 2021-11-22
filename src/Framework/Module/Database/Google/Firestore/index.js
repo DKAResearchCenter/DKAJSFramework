@@ -16,13 +16,6 @@ class Firestore {
         return this.instance.firestore();
     }
 
-
-
-
-
-
-
-
 }
 
 
