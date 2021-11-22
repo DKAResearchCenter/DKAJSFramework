@@ -1,4 +1,4 @@
-import gpio from "gpio"
+import gpio from "gpio";
 
 const Options = {
     /**
@@ -26,6 +26,9 @@ const Options = {
 
     MARIADB_TYPE_DATA_BIGINT : "BIGINT",
     MARIADB_TYPE_DATA_LONGTEXT : "LONGTEXT",
+    MARIADB_TYPE_DATA_INT : "INT",
+    MARIADB_TYPE_DATA_BLOB : "BLOB",
+
     MARIADB_OPT_AUTO_INCREMENT : "AUTO_INCREMENT",
     MARIADB_OPT_AUTO_PRIMARY_KEY : "PRIMARY KEY",
 
@@ -42,10 +45,19 @@ const Options = {
     GPIO_DIR_UP : 'up',
     GPIO_DIR_DOWN : 'down',
     GPIO_EVENT_CHANGE : "change",
+    GPIO_PULL_UP : 'rising',
+    GPIO_PULL_DOWN : 'falling',
 
     ESCPOS_TYPE_USB : 1,
     ESCPOS_TYPE_NETWORK : 2,
     ESCPOS_TYPE_SERIAL : 3,
+
+    ENCRYPTION_ENGINE_JWT : "JWT",
+    ENCRYPTION_ENGINE_CRYPTO : "CRYPTO",
+
+    ALGORITHM_AES_256_GCM : 'aes-256-gcm',
+    ALGORITHM_AES_192_GCM : 'aes-192-gcm',
+    ALGORITHM_AES_128_GCM : 'aes-128-gcm',
 
     SICEPAT_EXPEDITION_DEVELOPMENT : 'http://apitrek.sicepat.com/',
     SICEPAT_EXPEDITION_PRODUCTION : 'http://apitrek.sicepat.com/',

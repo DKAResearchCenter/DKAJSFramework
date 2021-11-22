@@ -11,6 +11,5 @@ const Status = {
 
         },
         Uptime : os.uptime(),
-
     }
 };

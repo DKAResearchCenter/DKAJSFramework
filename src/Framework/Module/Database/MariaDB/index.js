@@ -1,12 +1,12 @@
 'use strict';
 'use warning';
-import {Server, Options, Functions} from "./../../index.module.d.js";
+import DKA, {Server, Config, Security, Options, Functions} from "./../../index.module.d.js";
 import {join} from "path";
 import mysqldump from 'mysqldump';
 import _ from "lodash";
 import moment from "moment";
 import {existsSync, mkdirSync} from "fs";
-
+import {error} from "winston";
 /**
  * Functions Fot Class Mysql Database In Framework
  * All Right Reserved
@@ -29,16 +29,17 @@ class MariaDB {
     #mWhere;
     #mKey;
     #mVal;
-    #DBInstance;
+    mOptions;
+    DBInstance;
     #mSearchAdd;
-    #options;
+    #method;
 
     /***
      * @returns {number}
      * @constructor
      */
     static get MARIADB_CREATECONNECTION() {
-        return 1;
+        return Options.MARIADB_CREATECONNECTION;
     };
 
     /***
@@ -46,7 +47,7 @@ class MariaDB {
      * @constructor
      */
     static get MARIADB_POOL_CLUSTER() {
-        return 2
+        return Options.MARIADB_POOL_CLUSTER;
     };
 
     /***
@@ -54,8 +55,57 @@ class MariaDB {
      * @returns {number}
      */
     static get MARIADB_POOL() {
+        return Options.MARIADB_POOL;
+    };
+
+    /***
+     *
+     * @returns {number}
+     */
+    static get MARIADB_METHOD_CREATE_TABLE() {
+        return 0;
+    };
+
+    /***
+     *
+     * @returns {number}
+     */
+    static get MARIADB_METHOD_CREATE() {
+        return 1;
+    };
+
+    /***
+     *
+     * @returns {number}
+     */
+    static get MARIADB_METHOD_READ() {
+        return 2;
+    };
+
+    /***
+     *
+     * @returns {number}
+     */
+    static get MARIADB_METHOD_UPDATE() {
         return 3;
     };
+
+    /***
+     *
+     * @returns {number}
+     */
+    static get MARIADB_METHOD_DELETE() {
+        return 4;
+    };
+
+    /***
+     *
+     * @returns {number}
+     */
+    static get MARIADB_METHOD_RAW() {
+        return 5;
+    };
+
 
     /**
      * @constructor
@@ -64,36 +114,37 @@ class MariaDB {
      * @param {string} options.user
      * @param {string} options.password
      * @param {string} options.database
+     * @param {Boolean} options.isLogging
      * @param {Number} options.port
      * @param {Number} options.timezone
      * @param {number} options.connectionLimit
      * @param {Boolean} options.autoBackup
-     * @param {Boolean} options.encryption
+     * @param {Object} options.encryption
+     * @param {boolean} options.encryption.enabled
+     * @param {String} options.encryption.engine
+     * @param {String} options.encryption.alg
+     * @param {Object} options.encryption.options
      */
     constructor(options) {
-        this.options = _.extend({
-            engine : MariaDB.MARIADB_CREATECONNECTION,
-            host : "localhost",
-            user : "root",
-            password : "",
-            database : "test",
-            port : 3306,
-            connectionLimit : 2,
-            timezone : '+08:00',
-            autoBackup : false,
-            encryption : {
-                table : false,
-                column : false,
-                data : false
-            }
-        }, options);
-
+        this.options = _.merge(DKA.config.Database.MariaDB, options );
+        DKA.config.Database.MariaDB = this.options;
         /** **
          *
          * */
         const MariaDBEngine = require("mariadb");
         moment.locale("id");
 
+        switch (this.options.encryption.engine){
+            case Options.ENCRYPTION_ENGINE_CRYPTO :
+                this.EncryptionModule = new Security.Encryption.Crypto({
+                    alg : Options.ALGORITHM_AES_256_GCM,
+                    secretKey : this.options.encryption.secretKey
+                });
+                break;
+
+            default :
+                this.EncryptionModule = new Security.Encryption.Crypto();
+        }
 
         switch (this.options.engine){
             case MariaDB.MARIADB_POOL :
@@ -109,48 +160,35 @@ class MariaDB {
                 this.DBInstance = MariaDBEngine.createPool(this.options);
                 break;
         }
-
-    }
-
-    /**
-     * @deprecated please use CreateTable.
-     * @returns {Promise<void>}
-     */
-    init = async() => {
-
     }
     /**
      * @constructor
      * @param {String} TableName
-     * @param {JSON} Rule Place Your Model Data
+     * @param {[]} Rule Place Your Model Data
      * @param {String} Rule.typeData Place Your Model Data
      * @param {Boolean} Rule.defaultNotNull Place Your Model Data
+     * @param {Boolean} Rule.ifNotExist Create Table If Not Exists
      * @returns {Promise<unknown> | JSON}
      * @description
      */
     CreateTable = async (TableName, Rule) => {
-
+        this.#method = MariaDB.MARIADB_METHOD_CREATE_TABLE;
         /** Load Encryption**/
-        const enc = await new Functions.Encryption.Crypto();
-
-        const mTableName = (this.options.encryption.table) ? enc.encode(TableName).toString() : TableName;
+        let mTableName = (this.options.encryption.enabled) ? await this.EncryptionModule.encodeIvSync(TableName) : TableName;
 
         let arrayColumn = [];
-
-        Object.keys(Rule).forEach((key) => {
-            let mKey = (this.options.encryption.column && Rule[key].primaryKey === undefined) ? new enc.encode(key).toString() : key;
+        await Object.keys(Rule).forEach((key) => {
+            const mKey = (this.options.encryption.options.column && this.options.encryption.enabled) ? this.EncryptionModule.encodeIvSync(`${key}`) : key;
             let typeData = (Rule[key].typeData !== undefined) ? `${Rule[key].typeData}` : Options.MARIADB_TYPE_DATA_LONGTEXT;
-            let defaultNotNull = (Rule[key].primaryKey !== true ) ?
-                (Rule[key].defaultNotNull !== undefined && Rule[key].defaultNotNull) ?
-                    `DEFAULT NOT NULL` : `DEFAULT NULL`
-                    : ``;
-            let autoIncrement = (Rule[key].autoIncrement !== undefined) ? Options.MARIADB_OPT_AUTO_INCREMENT : ``;
-            let primaryKey = (Rule[key].primaryKey !== undefined) ? Options.MARIADB_OPT_AUTO_PRIMARY_KEY : ``;
+            let defaultNotNull = (Rule[key].primaryKey !== true ) ? (Rule[key].defaultNotNull !== undefined && Rule[key].defaultNotNull) ? `DEFAULT NOT NULL` : `DEFAULT NULL` : ``;
+            let autoIncrement = (Rule[key].autoIncrement !== undefined && Rule[key].autoIncrement !== false) ? Options.MARIADB_OPT_AUTO_INCREMENT : ``;
+            let primaryKey = (Rule[key].primaryKey !== undefined && Rule[key].primaryKey !== false) ? Options.MARIADB_OPT_AUTO_PRIMARY_KEY : ``;
+            let commentColumn = (Rule[key].comment !== undefined) ? ` COMMENT '${Rule[key].comment}'` : ` `;
 
-            arrayColumn.push(`\`${mKey}\` ${typeData} ${defaultNotNull} ${autoIncrement} ${primaryKey}`);
+            arrayColumn.push(` \`${mKey}\` ${typeData} ${defaultNotNull} ${autoIncrement}${primaryKey}${commentColumn}`);
         });
 
-        const SqlScript = `CREATE TABLE IF NOT EXISTS \`${mTableName}\` (${arrayColumn});`;
+        const SqlScript = `CREATE TABLE\`${mTableName}\` (${arrayColumn});`;
 
         return this.rawQuerySync(SqlScript, []);
     }
@@ -163,28 +201,31 @@ class MariaDB {
      * @description
      */
     Create = async (TableName, Rules) => {
-
+        this.#method = MariaDB.MARIADB_METHOD_CREATE;
         let Rule = _.extend({
             data: false,
         }, Rules)
 
         /** Load Encryption**/
-        const enc = await new Functions.Encryption.Crypto();
-
-        const mTableName = (this.options.encryption.table) ? enc.encode(TableName).toString() : TableName;
+        let mTableName = (this.options.encryption.enabled) ? await this.EncryptionModule.encodeIvSync(TableName) : TableName;
 
         let TypeData = Rule.data instanceof Array;
 
         if (!TypeData) {
+
             this.mKey = [];
             this.mVal = [];
 
             Object.keys(Rule.data).forEach((key) => {
-                this.mKey.push(` \`${(this.options.encryption.column) ? enc.encode(key) : key}\` `);
-                this.mVal.push(`"${(this.options.encryption.column) ? enc.encode(Rule.data[key]) : Rule.data[key]}"`);
+                this.mKey.push(` \`${(this.options.encryption.enabled && this.options.encryption.options.column) ? this.EncryptionModule.encodeIvSync(`${key}`) : key}\` `);
+
+                this.mVal.push(`"${(this.options.encryption.enabled && this.options.encryption.options.column) ? this.EncryptionModule.encodeIvSync(`${Rule.data[key]}`) : Rule.data[key]}"`);
             });
 
+
+
             let SqlScript = `INSERT INTO \`${mTableName}\` (${this.mKey}) VALUES (${this.mVal}) `;
+
 
             this.#returnedResult = await this.rawQuerySync(SqlScript, []);
         } else {
@@ -203,8 +244,7 @@ class MariaDB {
 
             const SqlScript = `INSERT INTO ${mTableName} (${mKey}) VALUES ${mVal} `;
 
-            this.#returnedResult = await this.rawQuerySync(SqlScript, []);
-
+            return this.rawQuerySync(SqlScript, []);
         }
 
         return this.#returnedResult;
@@ -223,7 +263,7 @@ class MariaDB {
      * @constructor
      */
     Read = async (TableName, Rules = {}) => {
-
+        this.#method = MariaDB.MARIADB_METHOD_READ;
         /** lodash Extend JSON COnfig **/
         const Rule = _.extend({
             as: false,
@@ -237,9 +277,7 @@ class MariaDB {
         }, Rules);
 
         /** Load Encryption**/
-        const enc = await new Functions.Encryption.Crypto();
-
-        const mTableName = (this.options.encryption.table) ? enc.encode(TableName).toString() : TableName;
+        const mTableName = `${(this.options.encryption.enabled) ? this.EncryptionModule.encodeIvSync(TableName).toString() : TableName}`;
 
         this.mWhere = [];
         this.mSearchAdd = ``;
@@ -248,7 +286,8 @@ class MariaDB {
 
         if (!TypeData) {
             Object.keys(Rule.search).forEach( (item) => {
-                this.mSearchAdd += `\`${item}\`=\'${Rule.search[item]}\' `;
+                this.mSearchAdd += `\'${(this.options.encryption.enabled) ? this.EncryptionModule.encodeIvSync(item).toString() : item}\' = \'${(this.options.encryption.enabled) ? this.EncryptionModule.encodeIvSync(Rule.search[item]) : Rule.search[item]}\' `;
+
             })
         }else{
             Rule.search.forEach((item) => {
@@ -269,10 +308,9 @@ class MariaDB {
         const SelectOrderBy = (Rule.orderBy.column.length > 0) ? `ORDER BY ${Rule.orderBy.column} ${Rule.orderBy.mode}` : ``;
         const selectParentAs = (Rule.as !== false) ? `as \`${Rule.a}\`` : ``;
 
-        const mSQL = `SELECT ${SelectColumn} FROM \`${mTableName}\` ${selectParentAs} ${UpdateWhere} \n ${SelectOrderBy} ${SelectLimit}`;
+        const mSQL = `SELECT ${SelectColumn} FROM \`${mTableName}\`${selectParentAs} ${UpdateWhere} \n ${SelectOrderBy} ${SelectLimit}`;
 
         return this.rawQuerySync(mSQL, []);
-
     }
     Baca = this.Read;
     /**
@@ -286,6 +324,7 @@ class MariaDB {
      */
 
     Update = async (TableName, Rules) => {
+        this.#method = MariaDB.MARIADB_METHOD_UPDATE;
         /** Merge JSON Extend loDash **/
         const Rule = _.extend({
             data: false,
@@ -320,7 +359,7 @@ class MariaDB {
      * @description
      */
     Delete = async (TableName, Rules) => {
-
+        this.#method = MariaDB.MARIADB_METHOD_DELETE;
         const Rule = _.extend({
             search: false
         }, Rules)
@@ -328,13 +367,12 @@ class MariaDB {
         this.mWhere = [];
 
         Object.keys(Rule.search).forEach((key) => {
-            this.mWhere.push(`${key} = '${Rule.search[key]}' `)
+            this.mWhere.push(` \`${key}\` = "${Rule.search[key]}" `)
         });
 
         const DeleteWhere = (Rule.search !== false) ? `WHERE ${this.mWhere}` : ``;
 
-        const SqlScript = `DELETE FROM ${TableName} ${DeleteWhere} `;
-
+        const SqlScript = `DELETE FROM \`${TableName}\` ${DeleteWhere} `;
         return this.rawQuerySync(SqlScript, []);
     };
     Hapus = this.Delete;
@@ -477,6 +515,7 @@ class MariaDB {
      */
     rawQuerySync = async (SQLString, ArrayParams) => {
         const mSQLString = SQLString;
+        const timeStart = new Date().getTime();
         /** Promise To Task Future **/
         return new Promise(async (resolve, rejected) => {
             /** Declaration Of Variable **/
@@ -484,338 +523,250 @@ class MariaDB {
                 case MariaDB.MARIADB_POOL:
                     this.DBInstance.getConnection()
                         .then(async (conn) => {
-                            /**
-                             * Checking Auto Backup System
-                             */
-                            if (this.options.autoBackup){
-                                this.Export()
-                                    .then(async () => {
-                                        /** Create A Query  **/
-                                        await conn.query(mSQLString, ArrayParams)
-                                            .then(async (rows) => {
-                                                if (rows.length > 0 || rows.affectedRows > 0 || rows.warningStatus === 0) {
-                                                    await conn.query("SELECT UNIX_TIMESTAMP(CURRENT_TIMESTAMP) AS time_execute")
-                                                        .then(async (rowsTime) => {
-                                                            this.returnedResult = {
-                                                                status: true,
-                                                                code: 200,
-                                                                msg: `Success`,
-                                                                data: rows,
-                                                                time_execute : {
-                                                                    timestamp : moment.unix(rowsTime[0].time_execute).toISOString(),
-                                                                    human : moment.unix(rowsTime[0].time_execute).format('LLL'),
-                                                                    unix : rowsTime[0].time_execute
-                                                                }
-                                                            };
-                                                        }).catch(rejected)
-                                                    await resolve(this.returnedResult);
-                                                } else {
-                                                    this.returnedResult = {
-                                                        status: false,
-                                                        code: 404,
-                                                        msg: `Not Found`
-                                                    };
-                                                    await rejected(this.returnedResult);
+                            //console.log(err)
+                            /** Create A Query  **/
+                            await conn.query(mSQLString, ArrayParams)
+                                .then(async (rows) => {
+                                    let timeEnd = new Date().getTime();
+                                    let metadata = { activeConnections : this.DBInstance.activeConnections(), idleConnections : this.DBInstance.idleConnections(), totalConnections : this.DBInstance.totalConnections(), sqlRaw : SQLString, timeExecuteinSecond : `${(timeEnd- timeStart)} ms` };
+                                    switch (this.#method){
+                                        case MariaDB.MARIADB_METHOD_CREATE_TABLE :
+                                            //###########################################################################
+                                            await (rows.warningStatus < 1) ?
+                                                await resolve({ status: true, code: 200, msg: `successful, your data has been created`, metadata : metadata}) :
+                                                await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, metadata : metadata});
+                                            await conn.release();
+                                            //###########################################################################
+                                            break;
+                                        case MariaDB.MARIADB_METHOD_CREATE :
+                                            //###########################################################################
+                                            await (rows.affectedRows > 0) ?
+                                                await (rows.warningStatus < 1) ?
+                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been created`, id : rows.insertId, metadata : metadata}) :
+                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, id : rows.insertId, metadata : metadata})
+                                                : await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                            await conn.release();
+                                            //###########################################################################
+                                            break;
+                                        case MariaDB.MARIADB_METHOD_READ :
+                                            //###########################################################################
+                                            if (rows.length > 0) {
+                                                if (this.options.encryption.enabled && this.options.encryption.options.column){
+                                                    let dataArray = [];
+                                                    await rows.forEach((res) => {
+                                                        let dataJSON = {};
+                                                        Object.keys(res).forEach((key) => {
+                                                           dataJSON[this.EncryptionModule.decodeIvSync(key)] = this.EncryptionModule.decodeIvSync(res[key]);
+                                                        });
+                                                        dataArray.push(dataJSON);
+                                                    })
+                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been read`, data : dataArray, metadata : metadata});
+                                                    await conn.release();
+                                                }else{
+                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been read`, data : rows, metadata : metadata});
+                                                    await conn.release();
                                                 }
 
-                                            }).catch(async (err) => {
-                                                this.returnedResult = {
-                                                    status: false,
-                                                    code: 505,
-                                                    msg: "Error Detected",
-                                                    error: {
-                                                        errorMsg : err.text,
-                                                        errorCode : err.code,
-                                                        errNo : err.errno
-                                                    }
-                                                }
-                                                await rejected(this.returnedResult);
-                                            }).finally(() => {
-                                                conn.end();
-                                            });
-                                        /** End Create A Query  **/
-                                    })
-                                    .catch(async (error) => {
-                                        await conn.end();
-                                        await rejected(error);
-                                    })
-                            }else{
-                                /** Create A Query  **/
-                                await conn.query(mSQLString, ArrayParams)
-                                    .then(async (rows) => {
-                                        if (rows.length > 0 || rows.affectedRows > 0 || rows.warningStatus === 0) {
-                                            await conn.query("SELECT UNIX_TIMESTAMP(CURRENT_TIMESTAMP) AS time_execute")
-                                                .then(async (rowsTime) => {
-                                                    this.returnedResult = {
-                                                        status: true,
-                                                        code: 200,
-                                                        msg: `Success`,
-                                                        data: rows,
-                                                        time_execute : {
-                                                            timestamp : moment.unix(rowsTime[0].time_execute).toISOString(),
-                                                            human : moment.unix(rowsTime[0].time_execute).format('LLL'),
-                                                            unix : rowsTime[0].time_execute
-                                                        }
-                                                    };
-                                                }).catch(rejected)
-                                            conn.release();
-                                            await resolve(this.returnedResult);
-                                        }else {
-                                            this.returnedResult = {
-                                                status: false,
-                                                code: 404,
-                                                msg: `Not Found`
-                                            };
-                                            await rejected(this.returnedResult);
-                                            conn.release()
-                                        }
-
-                                    }).catch(async (err) => {
-                                        this.returnedResult = {
-                                            status: false,
-                                            code: 505,
-                                            msg: "Error Detected",
-                                            error: {
-                                                errorMsg : err.text,
-                                                errorCode : err.code,
-                                                errNo : err.errno
+                                            }else{
+                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
+                                                await conn.release();
                                             }
-                                        }
-                                        conn.release();
-                                        await rejected(this.returnedResult);
-                                    });
-                                /** End Create A Query  **/
-                            }
+                                            //###########################################################################
+                                            break;
+                                        case MariaDB.MARIADB_METHOD_UPDATE :
+                                            await (rows.affectedRows > 0) ?
+                                                await (rows.warningStatus < 1) ?
+                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been update`, rows : rows.affectedRows, metadata : metadata}) :
+                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
+                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                            await conn.release();
+                                            break;
+                                        case MariaDB.MARIADB_METHOD_DELETE :
+                                            await (rows.affectedRows > 0) ?
+                                                await (rows.warningStatus < 1) ?
+                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been deleted`, rows : rows.affectedRows, metadata : metadata}) :
+                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
+                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                            await conn.release();
+                                            break;
+                                        default :
+                                            //###########################################################################
+                                            await (rows.length > 0) ?
+                                                await resolve({ status: true, code: 200, msg: `successful, your data has been execute`, data : rows, metadata : metadata}) :
+                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
+                                            await conn.release();
+                                            //###########################################################################
+                                            break;
+                                    }
+                                }).catch(async (err) => {
+                                    switch (err.code){
+                                        case 'ER_TABLE_EXISTS_ERROR' :
+                                            await rejected({ status: false, code: 500, msg: "Failed, Table Name Is Exists", error: { errorMsg : err.text, errorCode : err.code, errNo : err.errno }});
+                                            await conn.release();
+                                            break;
+                                        default :
+                                            await rejected({ status: false, code: 500, msg: "Error Detected", error: { errorMsg : err.text, errorCode : err.code, errNo : err.errno }});
+                                            await conn.release();
+                                    }
 
-                        })
-                        .catch(async (error) => {
-                        this.returnedResult = {
-                            status: false,
-                            code: 505,
-                            msg: "Error Detected",
-                            error: error
-                        };
-                        await rejected(this.returnedResult);
+                                });
+                            /** End Create A Query  **/
+                        }).catch(async (error) => {
+                            switch (error.code){
+                                case 'ER_BAD_DB_ERROR' :
+                                    await rejected( { status: false, code: 505, msg: "database name is not resolved. check database name in constructor configuration", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
+                                    break;
+                                case 'ER_GET_CONNECTION_TIMEOUT' :
+                                    await rejected({ status: false, code: 505, msg: "connection to database server timed out", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
+                                    break;
+                                default :
+                                    await rejected({ status: false, code: 505, msg: "An unknown error occurred", error: error});
+
+                            }
                     });
                     break;
                 case MariaDB.MARIADB_POOL_CLUSTER:
                     this.DBInstance.getConnection()
                         .then(async (conn) => {
-                            if (this.options.autoBackup){
-                                this.Export()
-                                    .then(async () => {
-                                        /** Create A Query  **/
-                                        await conn.query(mSQLString, ArrayParams)
-                                            .then(async (rows) => {
-                                                if (rows.length > 0 || rows.affectedRows > 0 || rows.warningStatus === 0) {
-                                                    await conn.query("SELECT UNIX_TIMESTAMP(CURRENT_TIMESTAMP) AS time_execute")
-                                                        .then(async (rowsTime) => {
-                                                            this.returnedResult = {
-                                                                status: true,
-                                                                code: 200,
-                                                                msg: `Success`,
-                                                                data: rows,
-                                                                time_execute : {
-                                                                    timestamp : moment.unix(rowsTime[0].time_execute).toISOString(),
-                                                                    human : moment.unix(rowsTime[0].time_execute).format('LLL'),
-                                                                    unix : rowsTime[0].time_execute
-                                                                }
-                                                            };
-                                                        }).catch(rejected)
-                                                    await resolve(this.returnedResult);
-                                                } else {
-                                                    this.returnedResult = {
-                                                        status: false,
-                                                        code: 404,
-                                                        msg: `Not Found`,
-                                                        data : rows
-                                                    };
-                                                    await rejected(this.returnedResult);
-                                                }
-
-                                            }).catch(async (err) => {
-                                                this.returnedResult = {
-                                                    status: false,
-                                                    code: 505,
-                                                    msg: "Error Detected",
-                                                    error: err
-                                                }
-                                                await rejected(this.returnedResult);
-                                            }).finally(() => {
-                                                conn.end();
-                                            });
-                                        /** End Create A Query  **/
-                                    })
-                                    .catch(async (error) => {
-                                        await rejected(error);
-                                    })
-                            }else{
-                                /** Create A Query  **/
-                                await conn.query(mSQLString, ArrayParams)
-                                    .then(async (rows) => {
-                                        if (rows.length > 0 || rows.affectedRows > 0) {
-                                            await conn.query("SELECT UNIX_TIMESTAMP(CURRENT_TIMESTAMP) AS time_execute")
-                                                .then(async (rowsTime) => {
-                                                    this.returnedResult = {
-                                                        status: true,
-                                                        code: 200,
-                                                        msg: `Success`,
-                                                        data: rows,
-                                                        time_execute : {
-                                                            timestamp : moment.unix(rowsTime[0].time_execute).toISOString(),
-                                                            human : moment.unix(rowsTime[0].time_execute).format('LLL'),
-                                                            unix : rowsTime[0].time_execute
-                                                        }
-                                                    };
-                                                }).catch(rejected)
-                                            conn.end();
-                                            await resolve(this.returnedResult);
-                                        } else {
-                                            this.returnedResult = {
-                                                status: false,
-                                                code: 404,
-                                                msg: `Not Found`,
-                                                data : rows
-                                            };
-                                            conn.end();
-                                            await rejected(this.returnedResult);
-                                        }
-
-                                    }).catch(async (err) => {
-                                        this.returnedResult = {
-                                            status: false,
-                                            code: 505,
-                                            msg: "Error Detected",
-                                            error: err
-                                        }
-                                        conn.end();
-                                        await rejected(this.returnedResult);
-                                    }).finally(() => {
-                                        conn.end();
-                                    });
-                                /** End Create A Query  **/
-                            }
+                            //console.log(err)
+                            /** Create A Query  **/
+                            await conn.query(mSQLString, ArrayParams)
+                                .then(async (rows) => {
+                                    let metadata = { activeConnections : this.DBInstance.activeConnections(), idleConnections : this.DBInstance.idleConnections(), totalConnections : this.DBInstance.totalConnections()};
+                                    switch (this.#method){
+                                        case MariaDB.MARIADB_METHOD_CREATE :
+                                            //###########################################################################
+                                            await (rows.affectedRows > 0) ?
+                                                await (rows.warningStatus < 1) ?
+                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been created`, id : rows.insertId, metadata : metadata}) :
+                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, id : rows.insertId, metadata : metadata})
+                                                : await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                            await conn.release();
+                                            //###########################################################################
+                                            break;
+                                        case MariaDB.MARIADB_METHOD_READ :
+                                            //###########################################################################
+                                            await (rows.length > 0) ?
+                                                await resolve({ status: true, code: 200, msg: `successful, your data has been read`, data : rows, metadata : metadata}) :
+                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
+                                            await conn.release();
+                                            //###########################################################################
+                                            break;
+                                        case MariaDB.MARIADB_METHOD_UPDATE :
+                                            await (rows.affectedRows > 0) ?
+                                                await (rows.warningStatus < 1) ?
+                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been update`, rows : rows.affectedRows, metadata : metadata}) :
+                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
+                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                            await conn.release();
+                                            break;
+                                        case MariaDB.MARIADB_METHOD_DELETE :
+                                            await (rows.affectedRows > 0) ?
+                                                await (rows.warningStatus < 1) ?
+                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been deleted`, rows : rows.affectedRows, metadata : metadata}) :
+                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
+                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                            await conn.release();
+                                            break;
+                                        default :
+                                            //###########################################################################
+                                            await (rows.length > 0) ?
+                                                await resolve({ status: true, code: 200, msg: `successful, your data has been execute`, data : rows, metadata : metadata}) :
+                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
+                                            await conn.release();
+                                            //###########################################################################
+                                            break;
+                                    }
+                                }).catch(async (err) => {
+                                    await rejected({ status: false, code: 500, msg: "Error Detected", error: { errorMsg : err.text, errorCode : err.code, errNo : err.errno }});
+                                    await conn.release();
+                                });
+                            /** End Create A Query  **/
                         }).catch(async (error) => {
-                        this.returnedResult = {
-                            status: false,
-                            code: 505,
-                            msg: "Error Detected",
-                            error: error
-                        };
-                        await rejected(this.returnedResult);
+                        switch (error.code){
+                            case 'ER_BAD_DB_ERROR' :
+                                await rejected( { status: false, code: 505, msg: "database name is not resolved. check database name in constructor configuration", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
+                                break;
+                            case 'ER_GET_CONNECTION_TIMEOUT' :
+                                await rejected({ status: false, code: 505, msg: "connection to database server timed out", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
+                                break;
+                            default :
+                                await rejected({ status: false, code: 505, msg: "An unknown error occurred", error: error});
+
+                        }
                     });
 
                     break;
                 default:
                     this.DBInstance
                         .then(async (conn) => {
-                            if (this.options.autoBackup){
-                                this.Export()
-                                    .then(async () => {
-                                        /** Create A Query  **/
-                                        await conn.query(mSQLString, ArrayParams)
-                                            .then(async (rows) => {
-                                                if (rows.length > 0 || rows.affectedRows > 0) {
-                                                    await conn.query("SELECT UNIX_TIMESTAMP(CURRENT_TIMESTAMP) AS time_execute")
-                                                        .then(async (rowsTime) => {
-                                                            this.returnedResult = {
-                                                                status: true,
-                                                                code: 200,
-                                                                msg: `Success`,
-                                                                data: rows,
-                                                                time_execute : {
-                                                                    timestamp : moment.unix(rowsTime[0].time_execute).toISOString(),
-                                                                    human : moment.unix(rowsTime[0].time_execute).format('LLL'),
-                                                                    unix : rowsTime[0].time_execute
-                                                                }
-                                                            };
-                                                        }).catch(rejected)
-                                                    await resolve(this.returnedResult);
-                                                } else {
-                                                    this.returnedResult = {
-                                                        status: false,
-                                                        code: 404,
-                                                        msg: `Not Found`
-                                                    };
-                                                    await rejected(this.returnedResult);
-                                                }
-
-                                            }).catch(async (err) => {
-                                                this.returnedResult = {
-                                                    status: false,
-                                                    code: 505,
-                                                    msg: "Error Detected",
-                                                    error: {
-                                                        errorMsg : err.text,
-                                                        errorCode : err.code,
-                                                        errNo : err.errno
-                                                    }
-                                                }
-                                                await rejected(this.returnedResult);
-                                            }).finally(() => {
-                                                conn.end();
-                                            });
-                                        /** End Create A Query  **/
-                                    })
-                                    .catch(async (error) => {
-                                        await rejected(error);
-                                    })
-                            }else{
-                                /** Create A Query  **/
-                                await conn.query(mSQLString, ArrayParams)
-                                    .then(async (rows) => {
-                                        if (rows.length > 0 || rows.affectedRows > 0) {
-                                            await conn.query("SELECT UNIX_TIMESTAMP(CURRENT_TIMESTAMP) AS time_execute")
-                                                .then(async (rowsTime) => {
-                                                    this.returnedResult = {
-                                                        status: true,
-                                                        code: 200,
-                                                        msg: `Success`,
-                                                        data: rows,
-                                                        time_execute : {
-                                                            timestamp : moment.unix(rowsTime[0].time_execute).toISOString(),
-                                                            human : moment.unix(rowsTime[0].time_execute).format('LLL'),
-                                                            unix : rowsTime[0].time_execute
-                                                        }
-                                                    };
-                                                }).catch(rejected)
-                                            conn.end();
-                                            await resolve(this.returnedResult);
-                                        } else {
-                                            this.returnedResult = {
-                                                status: false,
-                                                code: 404,
-                                                msg: `Not Found`
-                                            };
-                                            await rejected(this.returnedResult);
-                                        }
-
-                                    }).catch(async (err) => {
-                                        this.returnedResult = {
-                                            status: false,
-                                            code: 505,
-                                            msg: "Error Detected",
-                                            error: {
-                                                errorMsg : err.text,
-                                                errorCode : err.code,
-                                                errNo : err.errno
-                                            }
-                                        }
-                                        await rejected(this.returnedResult);
-                                    }).finally(async() => {
-                                        await conn.end();
-                                    })
-                                /** End Create A Query  **/
-                            }
+                            //console.log(err)
+                            /** Create A Query  **/
+                            await conn.query(mSQLString, ArrayParams)
+                                .then(async (rows) => {
+                                    let metadata = { };
+                                    switch (this.#method){
+                                        case MariaDB.MARIADB_METHOD_CREATE :
+                                            //###########################################################################
+                                            await (rows.affectedRows > 0) ?
+                                                await (rows.warningStatus < 1) ?
+                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been created`, id : rows.insertId, metadata : metadata}) :
+                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, id : rows.insertId, metadata : metadata})
+                                                : await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                            await conn.end();
+                                            //###########################################################################
+                                            break;
+                                        case MariaDB.MARIADB_METHOD_READ :
+                                            //###########################################################################
+                                            await (rows.length > 0) ?
+                                                await resolve({ status: true, code: 200, msg: `successful, your data has been read`, data : rows, metadata : metadata}) :
+                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
+                                            await conn.end();
+                                            //###########################################################################
+                                            break;
+                                        case MariaDB.MARIADB_METHOD_UPDATE :
+                                            await (rows.affectedRows > 0) ?
+                                                await (rows.warningStatus < 1) ?
+                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been update`, rows : rows.affectedRows, metadata : metadata}) :
+                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
+                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                            await conn.end();
+                                            break;
+                                        case MariaDB.MARIADB_METHOD_DELETE :
+                                            await (rows.affectedRows > 0) ?
+                                                await (rows.warningStatus < 1) ?
+                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been deleted`, rows : rows.affectedRows, metadata : metadata}) :
+                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
+                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                            await conn.end();
+                                            break;
+                                        default :
+                                            //###########################################################################
+                                            await (rows.length > 0) ?
+                                                await resolve({ status: true, code: 200, msg: `successful, your data has been execute`, data : rows, metadata : metadata}) :
+                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
+                                            await conn.end();
+                                            //###########################################################################
+                                            break;
+                                    }
+                                }).catch(async (err) => {
+                                    await rejected({ status: false, code: 500, msg: "Error Detected", error: { errorMsg : err.text, errorCode : err.code, errNo : err.errno }});
+                                    await conn.end();
+                                });
+                            /** End Create A Query  **/
                         }).catch(async (error) => {
-                        this.returnedResult = {
-                            status: false,
-                            code: 505,
-                            msg: "Error Detected",
-                            error: error
+                        switch (error.code){
+                            case 'ER_BAD_DB_ERROR' :
+                                await rejected( { status: false, code: 505, msg: "database name is not resolved. check database name in constructor configuration", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
+                                break;
+                            case 'ER_GET_CONNECTION_TIMEOUT' :
+                                await rejected({ status: false, code: 505, msg: "connection to database server timed out", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
+                                break;
+                            default :
+                                await rejected({ status: false, code: 505, msg: "An unknown error occurred", error: error});
+
                         }
-                        await rejected(this.returnedResult);
-                    })
+                    });
 
                     break;
             }
@@ -823,8 +774,6 @@ class MariaDB {
 
     };
     Sql = this.rawQuerySync;
-
-
 
 }
 

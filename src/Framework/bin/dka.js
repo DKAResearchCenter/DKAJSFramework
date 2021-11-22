@@ -23,10 +23,10 @@ program
 program.parse(process.argv);
 
 nodemon.once('start', function () {
-    console.log('DKA WebServer Is Running');
+    console.log('DKA Program Starting ...');
 }).on('quit', function () {
-    console.log('DKA WebServer has Terminate');
+    console.log('DKA Program Has Terminating ...');
     process.exit();
 }).on('restart', function (files) {
-    console.log('The DKA WebServer has Restarted. File Change : ', files);
+    console.log('The DKA Program has Restarted.');
 });

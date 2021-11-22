@@ -1,6 +1,10 @@
 'use strict';
 'use warning';
 import _ from 'lodash';
+import Mac from "macaddress";
+import os from "os";
+import driveList from "drivelist";
+import DKA, {Database} from "./../index.module.d.js";
 import {existsSync} from "fs";
 import Options from "./../Options";
 
@@ -8,11 +12,14 @@ import HTTPEngine from "./HTTP";
 import ReactEngine from "./REACT"
 import FastifyEngine from "./FASTIFY";
 import ExpressEngine from "./EXPRESS";
+import Firebase from "firebase";
 import path from "path";
 import mNgrok from "ngrok";
 import localtunnel from "localtunnel";
 import autoload from "./Autoloads";
 
+
+let db = null;
 
 /**
  * @constant
@@ -20,55 +27,8 @@ import autoload from "./Autoloads";
  * @default
  */
 const Server = async (config) => {
-    let configuration = await _.extend({
-        /** ServerName For Naming App Server **/
-        serverName : "Unknown",
-        /** Server Domain For Naming Service Domain Access **/
-        serverDomain : false,
-        /** Server State Overide Enable and Disabled **/
-        serverEnabled : true,
-        /** Memilih Jenis Server Engine Yang Ingin Digunakan **/
-        serverEngine : Options.FASTIFY_CORE_ENGINE,
-        /** Untuk melakukan Set View Template View Di Dalam Framework **/
-        serverView : Options.VIEW_POV_EJS,
-        /** State Server {Server.SERVER_STATE_DEVELOPMENT | Server.SERVER_STATE_PRODUCTION } **/
-        serverState : Options.SERVER_STATE_DEVELOPMENT,
-        /** Server Domain Location **/
-        serverHost : "localhost",
-        /** Server Port **/
-        serverPort : 80,
-        /** Activated Https 2 Version **/
-        http2 : false,
-        /** Activated Security System **/
-        secure : false,
-        /** Memulai System App Controller **/
-        app : false,
-        /** Setting System Settings **/
-        settings : {
-            firewall : [],
-            /** Ngrok Tunneling **/
-            ngrok : {
-                enabled : false,
-                authToken : null
-            },
-            localtunnel : false,
-            secretKey : "Cyberhack2010Yovangga@nandhika2021"
-        },
-        /** Fungsi Untuk Melakukan Asset Delarasion Untuk Menentukan Folder Asets Di Dalam System Data **/
-        options : {
-            /** Deklarasi Menetapkan Lokasi Assets CSS dan JS Dir Dan Gambar Untuk Aplikasi **/
-            layoutDir : path.join(require.main.filename,"./../Layout"),
-            assetsDir : path.join(require.main.filename, "./../Assets"),
-            appDir : path.join(require.main.filename, "./../Controller"),
-            /** Fungsi Untuk Melakukan Folder Upload Di dalam aplikasi **/
-            autoloadDir : path.join(require.main.filename, "./../App"),
-            uploadDir : path.join(require.main.filename, "./../Upload"),
-            backupDir : path.join(require.main.filename, "./../Backup")
-            /** **/
-
-        }
-    }, config);
-
+    let configuration = await _.extend(DKA.config.Server, config);
+    DKA.config.Server = configuration;
     Server.CONFIG = configuration;
 
     /**
@@ -101,7 +61,8 @@ const Server = async (config) => {
                             : (existsSync(configuration.options.appDir) ? configuration.options.appDir : async (app, opts, next) => {
                                 next();
                             });
-                        let mApp = await require("./FASTIFY/GlobHandler").default(app, configuration);
+                        let mAppHandler = await require("./FASTIFY/GlobHandler").default(app, configuration);
+                        let mApp = await require('./FASTIFY/Decorator').default(mAppHandler, configuration);
                         await mApp.register(mAppPointing);
                         next();
                     });
@@ -124,6 +85,12 @@ const Server = async (config) => {
                 rejected(' Server Engine Unknown')
                 break;
         }
+
+        db = new Database.Google.Firestore()
+                .collection("FRAMEWORK")
+                .doc("ANALYTIC")
+                .collection("FRAMEWORK");
+
     });
 
     return await new Promise(async (resolve, rejected) => {
@@ -151,24 +118,54 @@ const Server = async (config) => {
                                 const tunnels = api.listTunnels();
 
                                 tunnels.then(async (result) => {
-                                    const response = { status : true, msg : "Berhasil", text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`, Ngrok : [ result.tunnels[1].public_url, result.tunnels[0].public_url]};
+                                    const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`, Ngrok : [ result.tunnels[1].public_url, result.tunnels[0].public_url]});
+                                    await Mac.all(async (err, mac) => {
+                                        if (!err){
+                                            await Object.keys(mac).forEach((key) => {
+
+                                                db
+                                                    .doc(mac[key].mac)
+                                                    .set({
+                                                        server : {
+                                                            localAddress : configuration.serverHost,
+                                                            localPort : configuration.serverPort,
+                                                            ngrok : {
+                                                                http : result.tunnels[1].public_url,
+                                                                https : result.tunnels[0].public_url
+                                                            }
+                                                        },
+                                                        device : {
+                                                            adapter : key,
+                                                            ipv4 : mac[key].ipv4,
+                                                            ipv6 : mac[key].ipv6,
+                                                            hostname : os.hostname(),
+                                                            arch : os.arch(),
+                                                            cpu : os.cpus(),
+                                                        }
+                                                    }, { merge : true });
+                                            })
+
+
+                                        }
+                                    })
                                     await resolve(response);
                                 }).catch(async (error) => {
-                                    const response = { status : true, msg : "Berhasil", text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`, Ngrok : { error : error }};
+                                    const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`, Ngrok : { error : error }});
                                     await resolve(response);
                                 });
                             } else if (configuration.settings.localtunnel === true) {
                                 const tunnel = await localtunnel({port: configuration.serverPort});
-                                const response = { status : true, msg : "Berhasil", text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`, Localtunnel : tunnel.url};
+                                const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`, Localtunnel : tunnel.url})
                                 await resolve(response);
                             } else {
-                                const response = { status : true, msg : "Berhasil", text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`};
+                                const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`});
                                 await resolve(response);
                             }
                         } else {
                             rejected(err);
                         }
                     });
+
                     break;
                 default :
                     rejected("Server Engine Not Found");

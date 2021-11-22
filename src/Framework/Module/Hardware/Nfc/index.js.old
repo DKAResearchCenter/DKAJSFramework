@@ -1,0 +1,223 @@
+import {NFC, KEY_TYPE_A, KEY_TYPE_B, CONNECT_MODE_DIRECT, ACR122Reader, CONNECT_MODE_CARD, TAG_ISO_14443_4, TAG_ISO_14443_3} from 'nfc-pcsc';
+import { Options, Functions } from "./../../../index.module.d";
+import information from "./../../../../../../package.json";
+import os from "os";
+import mOS from "os-utils";
+import _ from "lodash";
+import isPi from "detect-rpi";
+import disk from "diskusage";
+import path from "path";
+import {execSync} from "child_process";
+
+function bytesToSize(bytes) {
+    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    if (bytes === 0) return '0 Byte';
+    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+    return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+}
+
+function print(){
+    const mDisk = disk.checkSync('/');
+    new Functions.Hardware.Printer.Escpos()
+        .then(async (printer) => {
+            await printer
+                .font('a')
+                .align('ct')
+                .size(0, 0)
+                .style('b')
+                .text("DKA Developer Test")
+                .style('')
+                .size(0, 0)
+                .text('_________________________')
+                .feed(2)
+                .text('Operasi Sistem :')
+                .style('')
+                .text(`${mOS.platform()}`)
+                .feed(2)
+                .text('CPU Digunakan :')
+                .style('')
+                .text(`${mOS.cpuCount()}`)
+                .feed(2)
+                .text('Status RAM :')
+                .style('')
+                .text(`Tersedia : ${mOS.totalmem()}:${mOS.freememPercentage()} %, Total Memori : ${mOS.totalmem()} `)
+                .feed(2)
+                .text('Waktu Aktif :')
+                .style('')
+                .text(`${os.uptime()}`)
+                .feed(2)
+                .text('Arsitektur :')
+                .style('')
+                .text(`${os.arch()}`)
+                .feed(2)
+                .text('Node Version :')
+                .style('')
+                .text(`${JSON.stringify(process.versions)}`)
+                .feed(2)
+                .text('DKA Framework Version :')
+                .style('')
+                .text(`${information.version}`)
+                .feed(2)
+                .text('Module List :')
+                .style('')
+                .text(`${process.env.PROCESSOR_REVISION}`)
+                .feed(2)
+                .text('Hdd Info :')
+                .style('')
+                .text(`Free : ${bytesToSize(mDisk.free)} | total : ${bytesToSize(mDisk.total)} | Tersedia : ${bytesToSize(mDisk.available)}`)
+                .text('_________________________')
+                .size(0, 0)
+                .text('DKA IOT Manless System V.2')
+                .feed(2)
+                .cut()
+                .close();
+
+        })
+        .catch(async (err) => {
+            console.log(err)
+        })
+}
+class Nfc {
+
+    reader = null;
+    restart = false;
+
+    constructor(config) {
+        this.config = _.extend({
+            secretKey : null,
+            keyType : Options.NFC_KEY_TYPE_A,
+            blockHeader : 0,
+            dataLength : 16,
+            developer : {
+                uidViewSystem : [
+                    'd95ed68b'
+                ],
+                mode : 'print'
+            }
+        }, config);
+        this.nfc = new NFC();
+
+
+    }
+
+
+
+    reads = async(blockNumber, callback) => {
+        this.nfc.on('reader', async (reader) => {
+            reader.aid = 'F222222222';
+            console.log(`${reader.reader.name}  device attached`);
+            await reader.on('card', async (card) => {
+                await reader.loadAuthenticationKey(this.config.blockHeader, 'ffffffffffff')
+                    .then(async (res) => {
+                        console.log(`Device Load Authentification`);
+                        if (blockNumber === 1 || blockNumber === 2){
+                            reader.authenticate(blockNumber, this.config.keyType, 'ffffffffffff')
+                                .then(async (res) => {
+                                    console.log(`Device Authenticated Success`);
+                                    reader.read(blockNumber, this.config.dataLength)
+                                        .then(async (res) => {
+                                            const convertionData = Buffer.from(res).toString('utf-8');
+                                            (convertionData !== "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00") ?
+                                                callback({ status : true, code : 200, msg : `Data Card Is Ready`, data : convertionData.replace(/[^\x00-\x7F]/g, "") }) :
+                                                callback({ status : false, code : 500, msg : `Illegal Card` });
+
+                                        }).catch(async (err) => {
+                                        callback({ status : false, code : 500, msg : `error, error get data card`, err : err})
+                                    })
+                                }).catch(async (err) => {
+                                //callback({ status : false, code : 500, msg : `successfully For Load Auth Key. But Faild to Authentification`, err : err});
+                            });
+                        }else{
+                            callback({ status : false, code : 500, msg : `Error !, KeyType Must range 1 and 2`});
+                        }
+
+
+                    }).catch(async (err) => {
+                        //callback({ status : false, code : 500, msg : `Error !, Failed Load Authentifation Key`, error : err});
+                    })
+
+
+            });
+
+            await reader.on('error', async (err) => {
+                //await callback({ status : false, code : 500, msg : `Fatal Error, Check Error Code`, error : err})
+            });
+        });
+    }
+
+    read = async(callback) => {
+        if (isPi()){
+            await this.nfc.on('reader', async (reader) => {
+                console.log(`${reader.reader.name}  device attached`);
+                await reader.on('card', async (card) => {
+                    if (card.uid !== this.config.developer.uidViewSystem.find( element => element === card.uid)){
+                        await callback({ status : true, code : 200, msg : `Successfully To Read Card`, data: card});
+                        //await execSync(`sudo systemctl restart pcscd`);
+                    }else{
+                        if (this.config.developer.mode === "print"){
+                            await print()
+                        }else{
+                            console.log({ os : mOS.platform()})
+                        }
+                    }
+                });
+
+                await reader.on('error', async (err) => {
+                    await callback({ status : false, code : 500, msg : `Fatal Error, Check Error Code`, error : err})
+                });
+            });
+        }else{
+            callback({ status : false, code : 500, msg : `this Device Not Raspberry Devices`})
+        }
+
+    }
+
+    raw = async(callback) => {
+        this.nfc.on('reader', async (reader) => {
+            //reader.autoProcessing = false;
+            reader.aid = '00A4040000'
+            console.log(`${reader.reader.name}  device attached`);
+            await reader.on('card', async (card) => {
+                await callback({ status : true, code : 200, msg : `Successfully To Read Card`, data: card})
+            });
+
+            await reader.on('error', async (err) => {
+                await callback({ status : false, code : 500, msg : `Fatal Error, Check Error Code`, error : err})
+            });
+        });
+    }
+
+    write = async(blockNumber, data, callback) => {
+        this.nfc.on('reader', async (reader) => {
+            await reader.on('card', async (card) => {
+                if (blockNumber === 1 || blockNumber === 2){
+                    await reader.loadAuthenticationKey(this.config.blockHeader, 'ffffffffffff')
+                        .then(async (res) => {
+                            reader.authenticate(blockNumber, this.config.keyType, 'ffffffffffff')
+                                .then(async (res) => {
+                                    const mDataHex = await Buffer.alloc(16)
+                                    await mDataHex.fill(0)
+                                    await mDataHex.write(data);
+                                    reader.write(blockNumber, mDataHex, this.config.dataLength)
+                                        .then(async (res) => {
+                                            callback({ status : true, code : 200, msg : `Successfully, to Create Data`, data : { data : data, blockNumber : blockNumber}});
+                                        }).catch(async (err) => {
+                                        callback({ status : false, code : 500, msg : `failed to Create Data to Card`, err : err})
+                                    })
+                                }).catch(async (err) => {
+                                callback({ status : false, code : 500, msg : `successfully For Load Auth Key. But Faild to Authentification`, err : err});
+                            });
+
+                        }).catch(async (err) => {
+                            callback({ status : false, code : 500, msg : `Error !, Failed Load Authentifation Key`, error : err});
+                        })
+                }else{
+                    callback({ status : false, code : 500, msg : `Error !, KeyType Must range 1 and 2`});
+                }
+
+            })
+        })
+    }
+}
+
+export default Nfc;

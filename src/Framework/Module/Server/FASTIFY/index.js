@@ -1,7 +1,9 @@
-import {Config} from "../../index.module.d.js";
+import DKA from "../../index.module.d.js";
 import {existsSync} from "fs";
+import { io } from "socket.io-client";
 import Options from "./../../Options"
 import chalk from "chalk";
+import {App} from "react-bootstrap-icons";
 
 /** Melakukan Setting Export Default Untuk File JS Ini **/
 export default async(config) => {
@@ -14,7 +16,8 @@ export default async(config) => {
     if (config.serverState === Options.SERVER_STATE_DEVELOPMENT){
         /** Memuat Fastify Module Dengan logger True **/
         const mSetting = {
-            logger : { level: 'info'},
+            logger : { level: 'warn'},
+            connectionTimeout : 180000,
             trustProxy: true
         };
 
@@ -33,6 +36,7 @@ export default async(config) => {
         /** Memuat Fastify Module Dengan logger True **/
         const mSetting = {
             logger : {level: 'warn'},
+            connectionTimeout : 180000,
             trustProxy : true
         };
 
@@ -74,7 +78,7 @@ export default async(config) => {
                     includeViewExtension: true
                 });
             }else{
-                console.log(chalk.red(` Pengaturan "options.layoutDir" Tidak Ditemukan. Harap Mendeklarasikan "options.layoutDir" Di Dalam Project "${ config.serverName}" `));
+                console.info( chalk.red(` Pengaturan "options.layoutDir" Tidak Ditemukan. Harap Mendeklarasikan "options.layoutDir" Di Dalam Project "${ config.serverName}" Atau Membuat Folder "Layout" di Folder Project `));
 
             }
     }
@@ -96,8 +100,15 @@ export default async(config) => {
     //await AppEngine.register(require('fastify-compress'), { global: true });
     await AppEngine.register(require('fastify-helmet'), { contentSecurityPolicy: false });
     await AppEngine.register(require('fastify-log'));
-    await AppEngine.register(require("fastify-jwt"), { secret : Config.Server.SecretConfig.EncryptSecret });
+    await AppEngine.register(require('fastify-graceful-shutdown'))
+    await AppEngine.register(require("fastify-jwt"), { secret : DKA.config.SecretConfig.EncryptSecret });
     await AppEngine.register(require("fastify-formbody"));
+    await AppEngine.after(async () => {
+        await AppEngine.gracefulShutdown(async (signal, next) => {
+            console.log(`graceful ${signal}`);
+            next();
+        })
+    })
 
     if (existsSync(config.options.assetsDir)){
         await AppEngine.register(require("fastify-static"), {
@@ -105,17 +116,18 @@ export default async(config) => {
             decorateReply: false
         });
     }else{
-        console.log(chalk.red(` Folder "assetsDir" Tidak Ditemukan. Harap Mendeklarasikan "options.assetsDir" Di Dalam Project "${ config.serverName}" Atau Membuat Folder "Assets" di Folder Project`))
+        console.info(chalk.blue(`Folder "assetsDir" Tidak Ditemukan. Harap Mendeklarasikan "options.assetsDir" Di Dalam Project "${ config.serverName}" Atau Membuat Folder "Assets" di Folder Project`))
     }
-    if (existsSync(config.options.assetsDir)){
+    if (existsSync(config.options.uploadDir)){
         await AppEngine.register(require("fastify-static"), {
             root : config.options.uploadDir,
             prefix: '/upload/',
             decorateReply: false
         });
     }else{
-        console.log(chalk.red(` Folder "uploadDir" Tidak Ditemukan. Harap Mendeklarasikan "options.uploadDir" Di Dalam Project "${ config.serverName}" Atau Membuat Folder "Upload" di Folder Project`));
+        console.info(chalk.blue(` Folder "uploadDir" Tidak Ditemukan. Harap Mendeklarasikan "options.uploadDir" Di Dalam Project "${ config.serverName}" Atau Membuat Folder "Upload" di Folder Project`));
     }
+
 
     return AppEngine;
 };

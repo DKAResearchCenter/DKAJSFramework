@@ -2,22 +2,18 @@
 'use warning';
 
 import Sessions from "./Sessions";
-import Encryption from "./Encryption";
 import AntiVirus from "./AntiVirus";
 import Upload from "./Upload"
 import Extend from "./Extended";
-import Hardware from "./Hardware";
 import Networking from "./Networking";
 import Multimedia from "./Multimedia";
 import File from "./File";
 
 const Functions = {
     Sessions : Sessions,
-    Encryption : Encryption,
     AntiVirus : AntiVirus,
     Upload : Upload,
     Extend : Extend,
-    Hardware : Hardware,
     Networking : Networking,
     Multimedia : Multimedia,
     File : File
@@ -25,4 +21,4 @@ const Functions = {
 };
 
 export default Functions;
-export {Sessions, Encryption, AntiVirus, Upload, Extend, Hardware, Networking, Multimedia, File };
+export {Sessions, AntiVirus, Upload, Extend, Networking, Multimedia, File };

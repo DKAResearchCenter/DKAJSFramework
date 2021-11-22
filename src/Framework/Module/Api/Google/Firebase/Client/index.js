@@ -1,5 +1,7 @@
+import DKA from "./../../../../index.module.d"
 import _ from "lodash";
 import firebase from "firebase/app";
+import firestore from "firebase/firestore";
 
 class Firebase {
     app = null;
@@ -11,45 +13,22 @@ class Firebase {
      */
     constructor(config) {
         /** Extend Constructor Config **/
-        this.config = _.extend({
-            name : null,
-            settings : {
-                auth : {
-                    enabled : true
-                },
-                firestore : {
-                    enabled : true
-                }
-            }
-        }, config);
-
-        (this.config.settings.auth.enabled) ? require("firebase/auth") : null;
-        (this.config.settings.firestore.enabled) ? require("firebase/firestore") : null;
+        this.config = _.merge(DKA.config.FirebaseConfig, config);
 
         /**
          *
          * @type {firebase.app.App}
          */
-        this.app = (this.config.name !== null) ? firebase.initializeApp(this.config, this.config.name) : firebase.initializeApp(this.config);
+        this.app = firebase.initializeApp(this.config);
     }
 
     /**
      *
-     * @param {firebase.firestore} db
+     * @param {firebase.firestore} callback
      * @return {Promise<firebase.firestore>}
      */
-    firestore = async(db = this.app.firestore()) => {
-        return db;
-    }
+    firestore = new firestore(this.app);
 
-    /**
-     *
-     * @param {firestore.auth} auth
-     * @return {Promise<Firebase.auth>}
-     */
-    auth = async(auth = this.app.auth()) => {
-        return auth;
-    }
 }
 
 export default Firebase;
