@@ -93,6 +93,24 @@ Us For More Information.
 ## Use DKA Framework
 
 Read About [How To Use](https://github.com/YovanggaAnandhika/DKAFramework/blob/master/USAGE.md) For How To Details Use.
+
 ## Kredit
 
 Terima Kasih Kepada [Yovangga Anandhika](https://github.com/YovanggaAnandhika) Untuk Berdonasi Nama Paket!
+
+##Thanks For Package Distribution
+[Fastify](https://github.com/fastify/fastify) - Fastify is a web framework highly focused on providing the best developer experience with the least overhead and a powerful plugin architecture. It is inspired by Hapi and Express and as far as we know, it is one of the fastest web frameworks in town.
+
+[BabelJS](https://github.com/babel/babel-standalone) - Babel is a compiler for writing next generation JavaScript
+
+[ReactJS](https://github.com/facebook/react) - React is a JavaScript library for building user interfaces
+
+[MariaDB](https://github.com/MariaDB/server) - MariaDB: The open source relational database
+
+[MongoDB](https://github.com/mongodb/mongo) - MongoDB Is Non SQL Database
+
+[EJS](https://github.com/mde/ejs) - Embedded JavaScript templates
+
+<h2>And all parties involved in making this framework a success. please inbox me if you want to add credit</h2>
+
+
