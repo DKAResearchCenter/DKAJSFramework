@@ -1,71 +1,98 @@
-
-<p align="center">
+<h1 align="center">DKA FRAMEWORK</h1>
+<!--<p align="center">
   <a href="#">
     <img alt="DKA" src="https://dkaresearchcenter.com/wp-content/uploads/2020/06/DKAsaa.png?raw=true" width="545" />
   </a>
-</p>
+</p> -->
 
 <p align="center">
   Easy Development, Easy Templating, All In One Programming Language and Mix All Framework
 </p>
 
-![coverage](https://img.shields.io/badge/coverage-90%25-green)
-![version](https://img.shields.io/badge/version-1.0.236-blue)
-![dependencies](https://img.shields.io/badge/dependencies-pass-green)
-![codacy](https://img.shields.io/badge/level-B-green)
-![downloads](https://img.shields.io/badge/downloads-2k%2Fmonth-brightgreen)
-![rating](https://img.shields.io/badge/rating-★★★☆☆-brightgreen)
-![uptime](https://img.shields.io/badge/uptime-100%25-brightgreen)
-![Cocoapods platforms](https://img.shields.io/cocoapods/p/AFNetworking)
+## Status
+
+![GitHub last commit](https://img.shields.io/github/last-commit/DKAResearchCenter/DKAJSFramework)
+![GitHub contributors](https://img.shields.io/github/contributors/DKAResearchCenter/DKAJSFramework)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/DKAResearchCenter/DKAJSFramework)
+![GitHub issues](https://img.shields.io/github/issues/DKAResearchCenter/DKAJSFramework)
+![GitHub repo size](https://img.shields.io/github/repo-size/DKAResearchCenter/DKAJSFramework)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 
 
-<table border="0">
- <tr>
-    <td><img width="800" src="https://dkaresearchcenter.com/wp-content/uploads/2020/06/FB_IMG_1583407496659.jpg" alt="Yovangga Anandhika"> </td>
-    <td>
-        <h3>Yovangga Anandhika</h3>
-        <b>A Full Stack Developer Software Engginering</b> From Indonesia.
-        Mendalami Bidang Pemegraman Komputer, Seorang Pendiri Komunitas Startup <b>DKA Research Center</b>
-        dan Aktif Mengerjakan Penelitian dan Pekerjaan Berbasis Inovasi Digital. Menguasai Lebih Dari 18 Bahasa Program Komputer.
-        <br/><br/>
-    </td>
- </tr>
-</table>
+## Benefit
+
+**Easy:** Can do Multi Project Development With Layouts and Functions That Can Be Called Without Having to Create Raw
+Functions In Application.
+
+**Compatibility:** Can be Used to Create Desktop Apps, Android Apps, and Web Apps. With 1 Program Language.
+
+**Flexible:** System opens and closes the function of loading the required modules because the framework module is
+unloading Install it.
+
+**Fast:** Optimizes Servers with Low RAM, and the Fastest Combination of Frameworks, and Compression Technologies The
+good one.
+
+## Feature
+
+* **Structured.** Easily Comprehensible and Neat Code and Callable Like a Modulation Pack.
+* **No Interface Blocking.** Can Run Without Interfering With Other Functions.
+* **Complete Documentation.** Complete and Included Documentation and Sample Code.
+* **Free from Error.** There is an Error Detection so that Finding Errors Can be Easily Done.
+* **Without Installing WebServer.** Using the main JS language that is suitable in terms of data efficiency.
+* **More Other Features.** 🐈
+
+**I'm a Night 🦉**
+
+```text
+🌞 Morning    147 commits    ██░░░░░░░░░░░░░░░░░░░░░░░   9.16% 
+🌆 Daytime    605 commits    █████████░░░░░░░░░░░░░░░░   37.72% 
+🌃 Evening    533 commits    ████████░░░░░░░░░░░░░░░░░   33.23% 
+🌙 Night      319 commits    █████████████░░░░░░░░░░░░   19.89%
+
+```
+
+📅 **I'm Most Productive on Monday**
+
+```text
+Monday       352 commits    █████░░░░░░░░░░░░░░░░░░░░   21.95% 
+Tuesday      259 commits    ████░░░░░░░░░░░░░░░░░░░░░   16.15% 
+Wednesday    275 commits    ████░░░░░░░░░░░░░░░░░░░░░   17.14% 
+Thursday     167 commits    ██░░░░░░░░░░░░░░░░░░░░░░░   10.41% 
+Friday       207 commits    ███░░░░░░░░░░░░░░░░░░░░░░   12.91% 
+Saturday     193 commits    ███░░░░░░░░░░░░░░░░░░░░░░   12.03% 
+Sunday       151 commits    ██░░░░░░░░░░░░░░░░░░░░░░░   9.41%
+
+```
+
+📊 **This Week I Spent My Time On**
+
+```text
+⌚︎ Time Zone: Asia/Makassar
+
+💬 Programming Languages: 
+YAML                     1 hr 54 mins        ████████████░░░░░░░░░░░░░   47.6% 
+Python                   1 hr 23 mins        ████████░░░░░░░░░░░░░░░░░   34.73% 
+C++                      24 mins             ██████████████░░░░░░░░░░░   50.29% 
+CMake                    10 mins             █░░░░░░░░░░░░░░░░░░░░░░░░   4.27% 
+XML                      4 mins              ░░░░░░░░░░░░░░░░░░░░░░░░░   1.72%
+
+```
+
+<p align="center">
+<a href="https://www.buymeacoffee.com/celiduba" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-red.png" alt="Buy Me A Coffee" height="40" width="170" ></a>
+</p>
 
 ---
 
 
-**Mudah:** Dapat melakukan Pengembangan Multi Project Dengan Layout dan Fungsi Yang Dapat Dipanggil Tanpa Harus Membuat Fungsi Mentah Di Dalam Aplikasi.
-
-**Kompabilitas:** Dapat Digunakan Membuat Desktop Apps, Android Apps, dan Web Apps. Dengan 1 Bahasa Program.
-
-**Fleksibel :** Sistem Buka Tutup Fungsi Dalam Memuat Module Yang Dibutuhkan Karna Modul Framework Bersifat Bongkar Pasang.
-
-**Cepat :** Mengoptimasi Server Dengan RAM Rendah, dan Gabungan Antar Framework Tercepat, Serta Teknologi Kompressing Yang Baik.
-
-## Layanan
-
-* **Terstruktur.** Kode Yang Dapat dengan Mudah Dipahami dan Rapi Serta Dapat Dipanggil Layaknya Seperti Paket Modulasi.
-* **Tanpa Pemblokiran Antarmuka .** Dapat Berjalan Tanpa Mengganggu Fungsi Lainnya.
-* **Dokumentasi Lengkap.** Dokumentasi dan Contoh Kode Yang Lengkap Dan Disertakan.
-* **Terbebas Dari Error.** Terdapat error Deteksi Agar Mencari Error Dapat dengan Mudah Dilakukan.
-* **Tanpa Install WebServer.** Menggunakan Bahasa JS Utama Yang Cocok Dalam Hal Efisiensi Data.
-* **Lebih Banyak Fitur Lainnya.** 🐈
-
 ## Installing DKA Framework
 
-Baca Tentang [Panduan Instalasi](https://yarnpkg.com/en/docs/install) Pada Website Kami Untuk Info Lebih Lengkap.
+Read About [Installation Guide](https://github.com/YovanggaAnandhika/DKAFramework/blob/master/INSTALL.md) On the Website
+Us For More Information.
 
-## Penggunaan DKA Framework
+## Use DKA Framework
 
-Baca Tentang [Cara Penggunaan](https://yarnpkg.com/en/docs/usage) Untuk Detail Cara Penggunaan.
-
-## Kontribusi Ke DKA Framework
-
-Kami Selalu Siap Untuk Melakukan Kontribusi Dan Berbagi Dalam Pengembangan [RFC](https://github.com/yarnpkg/rfcs). Sebelum Berkontribusi Harap Baca [code of conduct](CODE_OF_CONDUCT.md).
-
-Lihat [Contributing](https://yarnpkg.com/org/contributing/).
-
+Read About [How To Use](https://github.com/YovanggaAnandhika/DKAFramework/blob/master/USAGE.md) For How To Details Use.
 ## Kredit
 
-Terima Kasih Kepada [Yovangga Anandhika](https://github.com/samholmes) Untuk Berdonasi Nama Paket!
+Terima Kasih Kepada [Yovangga Anandhika](https://github.com/YovanggaAnandhika) Untuk Berdonasi Nama Paket!
