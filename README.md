@@ -90,6 +90,14 @@ XML                      4 mins              ░░░░░░░░░░░�
 Read About [Installation Guide](https://github.com/YovanggaAnandhika/DKAFramework/blob/master/INSTALL.md) On the Website
 Us For More Information.
 
+in npm package :
+
+```npm install dkaframework@latest``` or ``` npm install dkaframework@1.0.1.0.236```
+
+in yarn package :
+
+```yarn add dkaframework@latest``` or ``` yarn add dkaframework@1.0.1.0.236```
+
 ## Use DKA Framework
 
 Read About [How To Use](https://github.com/YovanggaAnandhika/DKAFramework/blob/master/USAGE.md) For How To Details Use.
