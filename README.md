@@ -90,13 +90,34 @@ XML                      4 mins              ░░░░░░░░░░░�
 Read About [Installation Guide](https://github.com/YovanggaAnandhika/DKAFramework/blob/master/INSTALL.md) On the Website
 Us For More Information.
 
+*********************************
+
 in npm package :
 
 ```npm install dkaframework@latest``` or ``` npm install dkaframework@1.0.1.0.236```
 
+add globaly :
+
+```npm -g install dkaframework@latest``` or ```npm -g install dkaframework@1.0.1.0.236```
+
+after globaly Install and auto create project and example Project :
+
+```$<your_path>/dka-create-app``` and follow the step
+
+-------------
 in yarn package :
 
 ```yarn add dkaframework@latest``` or ``` yarn add dkaframework@1.0.1.0.236```
+
+add globaly :
+
+```yarn global add dkaframework@latest``` or ``` yarn global add dkaframework@1.0.1.0.236```
+
+after globaly Install and auto create project and example Project :
+
+```$<your_path>/dka-create-app``` and follow the step
+
+------------
 
 ## Use DKA Framework
 
