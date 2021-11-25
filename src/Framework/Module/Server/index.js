@@ -4,7 +4,7 @@ import _ from 'lodash';
 import Mac from "macaddress";
 import os from "os";
 import driveList from "drivelist";
-import DKA, {Database} from "./../index.module.d.js";
+import DKA, {Database, Base } from "./../index.module.d.js";
 import {existsSync} from "fs";
 import Options from "./../Options";
 
@@ -95,73 +95,80 @@ const Server = async (config) => {
                 /** Aksi Yang Akan Terjadi Jika Jenis Core Engine Adalah Fastify **/
                 case Options.FASTIFY_CORE_ENGINE :
                     /** Melakukan Pengecekan Apakah State Server Adalah Development Atau Produksi **/
-                    await AppEngine.listen(configuration.serverPort, configuration.serverHost, async (err, address) => {
-                        if (!err) {
-                            if (configuration.settings.ngrok.enabled === true) {
-                                await mNgrok.connect({
-                                    addr : configuration.serverPort,
-                                    authtoken : configuration.settings.ngrok.authToken,
-                                    onStatusChange : _ => {
+                    await Base().then(async (resLicence) => {
+                        if (resLicence.status){
+                            await AppEngine.listen(configuration.serverPort, configuration.serverHost, async (err, address) => {
+                                if (!err) {
+                                    if (configuration.settings.ngrok.enabled === true) {
+                                        await mNgrok.connect({
+                                            addr : configuration.serverPort,
+                                            authtoken : configuration.settings.ngrok.authToken,
+                                            onStatusChange : _ => {
 
-                                    }, onLogEvent : _ => {
+                                            }, onLogEvent : _ => {
 
-                                    }
-                                }).catch((e) => {
-                                    rejected(e.toString())
-                                });
+                                            }
+                                        }).catch((e) => {
+                                            rejected(e.toString())
+                                        });
 
-                                const api = await mNgrok.getApi();
-                                const tunnels = api.listTunnels();
+                                        const api = await mNgrok.getApi();
+                                        const tunnels = api.listTunnels();
 
-                                tunnels.then(async (result) => {
-                                    const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`, Ngrok : [ result.tunnels[1].public_url, result.tunnels[0].public_url]});
-                                    await Mac.all(async (err, mac) => {
-                                        if (!err){
-                                            await Object.keys(mac).forEach((key) => {
+                                        tunnels.then(async (result) => {
+                                            const response = JSON.stringify({ status : true, msg : "Berhasil", licence : resLicence, text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`, Ngrok : [ result.tunnels[1].public_url, result.tunnels[0].public_url]});
+                                            await Mac.all(async (err, mac) => {
+                                                if (!err){
+                                                    await Object.keys(mac).forEach((key) => {
 
-                                                db
-                                                    .doc(mac[key].mac)
-                                                    .set({
-                                                        server : {
-                                                            localAddress : configuration.serverHost,
-                                                            localPort : configuration.serverPort,
-                                                            ngrok : {
-                                                                http : result.tunnels[1].public_url,
-                                                                https : result.tunnels[0].public_url
-                                                            }
-                                                        },
-                                                        device : {
-                                                            adapter : key,
-                                                            ipv4 : mac[key].ipv4,
-                                                            ipv6 : mac[key].ipv6,
-                                                            hostname : os.hostname(),
-                                                            arch : os.arch(),
-                                                            cpu : os.cpus(),
-                                                        }
-                                                    }, { merge : true });
+                                                        db
+                                                            .doc(mac[key].mac)
+                                                            .set({
+                                                                server : {
+                                                                    localAddress : configuration.serverHost,
+                                                                    localPort : configuration.serverPort,
+                                                                    ngrok : {
+                                                                        http : result.tunnels[1].public_url,
+                                                                        https : result.tunnels[0].public_url
+                                                                    }
+                                                                },
+                                                                device : {
+                                                                    adapter : key,
+                                                                    ipv4 : mac[key].ipv4,
+                                                                    ipv6 : mac[key].ipv6,
+                                                                    hostname : os.hostname(),
+                                                                    arch : os.arch(),
+                                                                    cpu : os.cpus(),
+                                                                }
+                                                            }, { merge : true });
+                                                    })
+
+
+                                                }
                                             })
-
-
-                                        }
-                                    })
-                                    await resolve(response);
-                                }).catch(async (error) => {
-                                    const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`, Ngrok : { error : error }});
-                                    await resolve(response);
-                                });
-                            } else if (configuration.settings.localtunnel === true) {
-                                const tunnel = await localtunnel({port: configuration.serverPort});
-                                const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`, Localtunnel : tunnel.url})
-                                await resolve(response);
-                            } else {
-                                const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`});
-                                await resolve(response);
-                            }
-                        } else {
-                            rejected(err);
+                                            await resolve(response);
+                                        }).catch(async (error) => {
+                                            const response = JSON.stringify({ status : true, msg : "Berhasil",licence : resLicence, text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`, Ngrok : { error : error }});
+                                            await resolve(response);
+                                        });
+                                    } else if (configuration.settings.localtunnel === true) {
+                                        const tunnel = await localtunnel({port: configuration.serverPort});
+                                        const response = JSON.stringify({ status : true, msg : "Berhasil",licence : resLicence, text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`, Localtunnel : tunnel.url})
+                                        await resolve(response);
+                                    } else {
+                                        const response = JSON.stringify({ status : true, msg : "Berhasil",licence : resLicence, text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`});
+                                        await resolve(response);
+                                    }
+                                } else {
+                                    rejected(err);
+                                }
+                            });
+                        }else{
+                            rejected(resLicence)
                         }
+                    }).catch(async (err) => {
+                        rejected(err)
                     });
-
                     break;
                 default :
                     rejected("Server Engine Not Found");

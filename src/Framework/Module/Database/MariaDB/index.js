@@ -1,6 +1,6 @@
 'use strict';
 'use warning';
-import DKA, {Server, Config, Security, Options, Functions} from "./../../index.module.d.js";
+import DKA, {Server, Config, Security, Options, Functions, Base} from "./../../index.module.d.js";
 import {join} from "path";
 import mysqldump from 'mysqldump';
 import _ from "lodash";
@@ -519,257 +519,266 @@ class MariaDB {
         /** Promise To Task Future **/
         return new Promise(async (resolve, rejected) => {
             /** Declaration Of Variable **/
-            switch (this.options.engine) {
-                case MariaDB.MARIADB_POOL:
-                    this.DBInstance.getConnection()
-                        .then(async (conn) => {
-                            //console.log(err)
-                            /** Create A Query  **/
-                            await conn.query(mSQLString, ArrayParams)
-                                .then(async (rows) => {
-                                    let timeEnd = new Date().getTime();
-                                    let metadata = { activeConnections : this.DBInstance.activeConnections(), idleConnections : this.DBInstance.idleConnections(), totalConnections : this.DBInstance.totalConnections(), sqlRaw : SQLString, timeExecuteinSecond : `${(timeEnd- timeStart)} ms` };
-                                    switch (this.#method){
-                                        case MariaDB.MARIADB_METHOD_CREATE_TABLE :
-                                            //###########################################################################
-                                            await (rows.warningStatus < 1) ?
-                                                await resolve({ status: true, code: 200, msg: `successful, your data has been created`, metadata : metadata}) :
-                                                await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, metadata : metadata});
-                                            await conn.release();
-                                            //###########################################################################
-                                            break;
-                                        case MariaDB.MARIADB_METHOD_CREATE :
-                                            //###########################################################################
-                                            await (rows.affectedRows > 0) ?
-                                                await (rows.warningStatus < 1) ?
-                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been created`, id : rows.insertId, metadata : metadata}) :
-                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, id : rows.insertId, metadata : metadata})
-                                                : await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
-                                            await conn.release();
-                                            //###########################################################################
-                                            break;
-                                        case MariaDB.MARIADB_METHOD_READ :
-                                            //###########################################################################
-                                            if (rows.length > 0) {
-                                                if (this.options.encryption.enabled && this.options.encryption.options.column){
-                                                    let dataArray = [];
-                                                    await rows.forEach((res) => {
-                                                        let dataJSON = {};
-                                                        Object.keys(res).forEach((key) => {
-                                                           dataJSON[this.EncryptionModule.decodeIvSync(key)] = this.EncryptionModule.decodeIvSync(res[key]);
-                                                        });
-                                                        dataArray.push(dataJSON);
-                                                    })
-                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been read`, data : dataArray, metadata : metadata});
+            await Base().then(async (resLicence) => {
+                if (resLicence.status){
+                    switch (this.options.engine) {
+                        case MariaDB.MARIADB_POOL:
+                            this.DBInstance.getConnection()
+                                .then(async (conn) => {
+                                    //console.log(err)
+                                    /** Create A Query  **/
+                                    await conn.query(mSQLString, ArrayParams)
+                                        .then(async (rows) => {
+                                            let timeEnd = new Date().getTime();
+                                            let metadata = { activeConnections : this.DBInstance.activeConnections(), idleConnections : this.DBInstance.idleConnections(), totalConnections : this.DBInstance.totalConnections(), sqlRaw : SQLString, timeExecuteinSecond : `${(timeEnd- timeStart)} ms` };
+                                            switch (this.#method){
+                                                case MariaDB.MARIADB_METHOD_CREATE_TABLE :
+                                                    //###########################################################################
+                                                    await (rows.warningStatus < 1) ?
+                                                        await resolve({ status: true, code: 200, msg: `successful, your data has been created`, metadata : metadata}) :
+                                                        await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, metadata : metadata});
                                                     await conn.release();
-                                                }else{
-                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been read`, data : rows, metadata : metadata});
+                                                    //###########################################################################
+                                                    break;
+                                                case MariaDB.MARIADB_METHOD_CREATE :
+                                                    //###########################################################################
+                                                    await (rows.affectedRows > 0) ?
+                                                        await (rows.warningStatus < 1) ?
+                                                            await resolve({ status: true, code: 200, msg: `successful, your data has been created`, id : rows.insertId, metadata : metadata}) :
+                                                            await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, id : rows.insertId, metadata : metadata})
+                                                        : await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
                                                     await conn.release();
-                                                }
+                                                    //###########################################################################
+                                                    break;
+                                                case MariaDB.MARIADB_METHOD_READ :
+                                                    //###########################################################################
+                                                    if (rows.length > 0) {
+                                                        if (this.options.encryption.enabled && this.options.encryption.options.column){
+                                                            let dataArray = [];
+                                                            await rows.forEach((res) => {
+                                                                let dataJSON = {};
+                                                                Object.keys(res).forEach((key) => {
+                                                                    dataJSON[this.EncryptionModule.decodeIvSync(key)] = this.EncryptionModule.decodeIvSync(res[key]);
+                                                                });
+                                                                dataArray.push(dataJSON);
+                                                            })
+                                                            await resolve({ status: true, code: 200, msg: `successful, your data has been read`, data : dataArray, metadata : metadata});
+                                                            await conn.release();
+                                                        }else{
+                                                            await resolve({ status: true, code: 200, msg: `successful, your data has been read`, data : rows, metadata : metadata});
+                                                            await conn.release();
+                                                        }
 
-                                            }else{
-                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
-                                                await conn.release();
+                                                    }else{
+                                                        await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
+                                                        await conn.release();
+                                                    }
+                                                    //###########################################################################
+                                                    break;
+                                                case MariaDB.MARIADB_METHOD_UPDATE :
+                                                    await (rows.affectedRows > 0) ?
+                                                        await (rows.warningStatus < 1) ?
+                                                            await resolve({ status: true, code: 200, msg: `successful, your data has been update`, rows : rows.affectedRows, metadata : metadata}) :
+                                                            await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
+                                                        await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                                    await conn.release();
+                                                    break;
+                                                case MariaDB.MARIADB_METHOD_DELETE :
+                                                    await (rows.affectedRows > 0) ?
+                                                        await (rows.warningStatus < 1) ?
+                                                            await resolve({ status: true, code: 200, msg: `successful, your data has been deleted`, rows : rows.affectedRows, metadata : metadata}) :
+                                                            await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
+                                                        await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                                    await conn.release();
+                                                    break;
+                                                default :
+                                                    //###########################################################################
+                                                    await (rows.length > 0) ?
+                                                        await resolve({ status: true, code: 200, msg: `successful, your data has been execute`, data : rows, metadata : metadata}) :
+                                                        await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
+                                                    await conn.release();
+                                                    //###########################################################################
+                                                    break;
                                             }
-                                            //###########################################################################
-                                            break;
-                                        case MariaDB.MARIADB_METHOD_UPDATE :
-                                            await (rows.affectedRows > 0) ?
-                                                await (rows.warningStatus < 1) ?
-                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been update`, rows : rows.affectedRows, metadata : metadata}) :
-                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
-                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
-                                            await conn.release();
-                                            break;
-                                        case MariaDB.MARIADB_METHOD_DELETE :
-                                            await (rows.affectedRows > 0) ?
-                                                await (rows.warningStatus < 1) ?
-                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been deleted`, rows : rows.affectedRows, metadata : metadata}) :
-                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
-                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
-                                            await conn.release();
-                                            break;
-                                        default :
-                                            //###########################################################################
-                                            await (rows.length > 0) ?
-                                                await resolve({ status: true, code: 200, msg: `successful, your data has been execute`, data : rows, metadata : metadata}) :
-                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
-                                            await conn.release();
-                                            //###########################################################################
-                                            break;
-                                    }
-                                }).catch(async (err) => {
-                                    switch (err.code){
-                                        case 'ER_TABLE_EXISTS_ERROR' :
-                                            await rejected({ status: false, code: 500, msg: "Failed, Table Name Is Exists", error: { errorMsg : err.text, errorCode : err.code, errNo : err.errno }});
-                                            await conn.release();
-                                            break;
-                                        default :
+                                        }).catch(async (err) => {
+                                            switch (err.code){
+                                                case 'ER_TABLE_EXISTS_ERROR' :
+                                                    await rejected({ status: false, code: 500, msg: "Failed, Table Name Is Exists", error: { errorMsg : err.text, errorCode : err.code, errNo : err.errno }});
+                                                    await conn.release();
+                                                    break;
+                                                default :
+                                                    await rejected({ status: false, code: 500, msg: "Error Detected", error: { errorMsg : err.text, errorCode : err.code, errNo : err.errno }});
+                                                    await conn.release();
+                                            }
+
+                                        });
+                                    /** End Create A Query  **/
+                                }).catch(async (error) => {
+                                switch (error.code){
+                                    case 'ER_BAD_DB_ERROR' :
+                                        await rejected( { status: false, code: 505, msg: "database name is not resolved. check database name in constructor configuration", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
+                                        break;
+                                    case 'ER_GET_CONNECTION_TIMEOUT' :
+                                        await rejected({ status: false, code: 505, msg: "connection to database server timed out", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
+                                        break;
+                                    default :
+                                        await rejected({ status: false, code: 505, msg: "An unknown error occurred", error: error});
+
+                                }
+                            });
+                            break;
+                        case MariaDB.MARIADB_POOL_CLUSTER:
+                            this.DBInstance.getConnection()
+                                .then(async (conn) => {
+                                    //console.log(err)
+                                    /** Create A Query  **/
+                                    await conn.query(mSQLString, ArrayParams)
+                                        .then(async (rows) => {
+                                            let metadata = { activeConnections : this.DBInstance.activeConnections(), idleConnections : this.DBInstance.idleConnections(), totalConnections : this.DBInstance.totalConnections()};
+                                            switch (this.#method){
+                                                case MariaDB.MARIADB_METHOD_CREATE :
+                                                    //###########################################################################
+                                                    await (rows.affectedRows > 0) ?
+                                                        await (rows.warningStatus < 1) ?
+                                                            await resolve({ status: true, code: 200, msg: `successful, your data has been created`, id : rows.insertId, metadata : metadata}) :
+                                                            await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, id : rows.insertId, metadata : metadata})
+                                                        : await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                                    await conn.release();
+                                                    //###########################################################################
+                                                    break;
+                                                case MariaDB.MARIADB_METHOD_READ :
+                                                    //###########################################################################
+                                                    await (rows.length > 0) ?
+                                                        await resolve({ status: true, code: 200, msg: `successful, your data has been read`, data : rows, metadata : metadata}) :
+                                                        await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
+                                                    await conn.release();
+                                                    //###########################################################################
+                                                    break;
+                                                case MariaDB.MARIADB_METHOD_UPDATE :
+                                                    await (rows.affectedRows > 0) ?
+                                                        await (rows.warningStatus < 1) ?
+                                                            await resolve({ status: true, code: 200, msg: `successful, your data has been update`, rows : rows.affectedRows, metadata : metadata}) :
+                                                            await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
+                                                        await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                                    await conn.release();
+                                                    break;
+                                                case MariaDB.MARIADB_METHOD_DELETE :
+                                                    await (rows.affectedRows > 0) ?
+                                                        await (rows.warningStatus < 1) ?
+                                                            await resolve({ status: true, code: 200, msg: `successful, your data has been deleted`, rows : rows.affectedRows, metadata : metadata}) :
+                                                            await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
+                                                        await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                                    await conn.release();
+                                                    break;
+                                                default :
+                                                    //###########################################################################
+                                                    await (rows.length > 0) ?
+                                                        await resolve({ status: true, code: 200, msg: `successful, your data has been execute`, data : rows, metadata : metadata}) :
+                                                        await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
+                                                    await conn.release();
+                                                    //###########################################################################
+                                                    break;
+                                            }
+                                        }).catch(async (err) => {
                                             await rejected({ status: false, code: 500, msg: "Error Detected", error: { errorMsg : err.text, errorCode : err.code, errNo : err.errno }});
                                             await conn.release();
-                                    }
+                                        });
+                                    /** End Create A Query  **/
+                                }).catch(async (error) => {
+                                switch (error.code){
+                                    case 'ER_BAD_DB_ERROR' :
+                                        await rejected( { status: false, code: 505, msg: "database name is not resolved. check database name in constructor configuration", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
+                                        break;
+                                    case 'ER_GET_CONNECTION_TIMEOUT' :
+                                        await rejected({ status: false, code: 505, msg: "connection to database server timed out", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
+                                        break;
+                                    default :
+                                        await rejected({ status: false, code: 505, msg: "An unknown error occurred", error: error});
 
-                                });
-                            /** End Create A Query  **/
-                        }).catch(async (error) => {
-                            switch (error.code){
-                                case 'ER_BAD_DB_ERROR' :
-                                    await rejected( { status: false, code: 505, msg: "database name is not resolved. check database name in constructor configuration", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
-                                    break;
-                                case 'ER_GET_CONNECTION_TIMEOUT' :
-                                    await rejected({ status: false, code: 505, msg: "connection to database server timed out", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
-                                    break;
-                                default :
-                                    await rejected({ status: false, code: 505, msg: "An unknown error occurred", error: error});
+                                }
+                            });
 
-                            }
-                    });
-                    break;
-                case MariaDB.MARIADB_POOL_CLUSTER:
-                    this.DBInstance.getConnection()
-                        .then(async (conn) => {
-                            //console.log(err)
-                            /** Create A Query  **/
-                            await conn.query(mSQLString, ArrayParams)
-                                .then(async (rows) => {
-                                    let metadata = { activeConnections : this.DBInstance.activeConnections(), idleConnections : this.DBInstance.idleConnections(), totalConnections : this.DBInstance.totalConnections()};
-                                    switch (this.#method){
-                                        case MariaDB.MARIADB_METHOD_CREATE :
-                                            //###########################################################################
-                                            await (rows.affectedRows > 0) ?
-                                                await (rows.warningStatus < 1) ?
-                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been created`, id : rows.insertId, metadata : metadata}) :
-                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, id : rows.insertId, metadata : metadata})
-                                                : await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
-                                            await conn.release();
-                                            //###########################################################################
-                                            break;
-                                        case MariaDB.MARIADB_METHOD_READ :
-                                            //###########################################################################
-                                            await (rows.length > 0) ?
-                                                await resolve({ status: true, code: 200, msg: `successful, your data has been read`, data : rows, metadata : metadata}) :
-                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
-                                            await conn.release();
-                                            //###########################################################################
-                                            break;
-                                        case MariaDB.MARIADB_METHOD_UPDATE :
-                                            await (rows.affectedRows > 0) ?
-                                                await (rows.warningStatus < 1) ?
-                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been update`, rows : rows.affectedRows, metadata : metadata}) :
-                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
-                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
-                                            await conn.release();
-                                            break;
-                                        case MariaDB.MARIADB_METHOD_DELETE :
-                                            await (rows.affectedRows > 0) ?
-                                                await (rows.warningStatus < 1) ?
-                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been deleted`, rows : rows.affectedRows, metadata : metadata}) :
-                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
-                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
-                                            await conn.release();
-                                            break;
-                                        default :
-                                            //###########################################################################
-                                            await (rows.length > 0) ?
-                                                await resolve({ status: true, code: 200, msg: `successful, your data has been execute`, data : rows, metadata : metadata}) :
-                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
-                                            await conn.release();
-                                            //###########################################################################
-                                            break;
-                                    }
-                                }).catch(async (err) => {
-                                    await rejected({ status: false, code: 500, msg: "Error Detected", error: { errorMsg : err.text, errorCode : err.code, errNo : err.errno }});
-                                    await conn.release();
-                                });
-                            /** End Create A Query  **/
-                        }).catch(async (error) => {
-                        switch (error.code){
-                            case 'ER_BAD_DB_ERROR' :
-                                await rejected( { status: false, code: 505, msg: "database name is not resolved. check database name in constructor configuration", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
-                                break;
-                            case 'ER_GET_CONNECTION_TIMEOUT' :
-                                await rejected({ status: false, code: 505, msg: "connection to database server timed out", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
-                                break;
-                            default :
-                                await rejected({ status: false, code: 505, msg: "An unknown error occurred", error: error});
-
-                        }
-                    });
-
-                    break;
-                default:
-                    this.DBInstance
-                        .then(async (conn) => {
-                            //console.log(err)
-                            /** Create A Query  **/
-                            await conn.query(mSQLString, ArrayParams)
-                                .then(async (rows) => {
-                                    let metadata = { };
-                                    switch (this.#method){
-                                        case MariaDB.MARIADB_METHOD_CREATE :
-                                            //###########################################################################
-                                            await (rows.affectedRows > 0) ?
-                                                await (rows.warningStatus < 1) ?
-                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been created`, id : rows.insertId, metadata : metadata}) :
-                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, id : rows.insertId, metadata : metadata})
-                                                : await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                            break;
+                        default:
+                            this.DBInstance
+                                .then(async (conn) => {
+                                    //console.log(err)
+                                    /** Create A Query  **/
+                                    await conn.query(mSQLString, ArrayParams)
+                                        .then(async (rows) => {
+                                            let metadata = { };
+                                            switch (this.#method){
+                                                case MariaDB.MARIADB_METHOD_CREATE :
+                                                    //###########################################################################
+                                                    await (rows.affectedRows > 0) ?
+                                                        await (rows.warningStatus < 1) ?
+                                                            await resolve({ status: true, code: 200, msg: `successful, your data has been created`, id : rows.insertId, metadata : metadata}) :
+                                                            await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, id : rows.insertId, metadata : metadata})
+                                                        : await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                                    await conn.end();
+                                                    //###########################################################################
+                                                    break;
+                                                case MariaDB.MARIADB_METHOD_READ :
+                                                    //###########################################################################
+                                                    await (rows.length > 0) ?
+                                                        await resolve({ status: true, code: 200, msg: `successful, your data has been read`, data : rows, metadata : metadata}) :
+                                                        await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
+                                                    await conn.end();
+                                                    //###########################################################################
+                                                    break;
+                                                case MariaDB.MARIADB_METHOD_UPDATE :
+                                                    await (rows.affectedRows > 0) ?
+                                                        await (rows.warningStatus < 1) ?
+                                                            await resolve({ status: true, code: 200, msg: `successful, your data has been update`, rows : rows.affectedRows, metadata : metadata}) :
+                                                            await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
+                                                        await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                                    await conn.end();
+                                                    break;
+                                                case MariaDB.MARIADB_METHOD_DELETE :
+                                                    await (rows.affectedRows > 0) ?
+                                                        await (rows.warningStatus < 1) ?
+                                                            await resolve({ status: true, code: 200, msg: `successful, your data has been deleted`, rows : rows.affectedRows, metadata : metadata}) :
+                                                            await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
+                                                        await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
+                                                    await conn.end();
+                                                    break;
+                                                default :
+                                                    //###########################################################################
+                                                    await (rows.length > 0) ?
+                                                        await resolve({ status: true, code: 200, msg: `successful, your data has been execute`, data : rows, metadata : metadata}) :
+                                                        await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
+                                                    await conn.end();
+                                                    //###########################################################################
+                                                    break;
+                                            }
+                                        }).catch(async (err) => {
+                                            await rejected({ status: false, code: 500, msg: "Error Detected", error: { errorMsg : err.text, errorCode : err.code, errNo : err.errno }});
                                             await conn.end();
-                                            //###########################################################################
-                                            break;
-                                        case MariaDB.MARIADB_METHOD_READ :
-                                            //###########################################################################
-                                            await (rows.length > 0) ?
-                                                await resolve({ status: true, code: 200, msg: `successful, your data has been read`, data : rows, metadata : metadata}) :
-                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
-                                            await conn.end();
-                                            //###########################################################################
-                                            break;
-                                        case MariaDB.MARIADB_METHOD_UPDATE :
-                                            await (rows.affectedRows > 0) ?
-                                                await (rows.warningStatus < 1) ?
-                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been update`, rows : rows.affectedRows, metadata : metadata}) :
-                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
-                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
-                                            await conn.end();
-                                            break;
-                                        case MariaDB.MARIADB_METHOD_DELETE :
-                                            await (rows.affectedRows > 0) ?
-                                                await (rows.warningStatus < 1) ?
-                                                    await resolve({ status: true, code: 200, msg: `successful, your data has been deleted`, rows : rows.affectedRows, metadata : metadata}) :
-                                                    await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
-                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
-                                            await conn.end();
-                                            break;
-                                        default :
-                                            //###########################################################################
-                                            await (rows.length > 0) ?
-                                                await resolve({ status: true, code: 200, msg: `successful, your data has been execute`, data : rows, metadata : metadata}) :
-                                                await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
-                                            await conn.end();
-                                            //###########################################################################
-                                            break;
-                                    }
-                                }).catch(async (err) => {
-                                    await rejected({ status: false, code: 500, msg: "Error Detected", error: { errorMsg : err.text, errorCode : err.code, errNo : err.errno }});
-                                    await conn.end();
-                                });
-                            /** End Create A Query  **/
-                        }).catch(async (error) => {
-                        switch (error.code){
-                            case 'ER_BAD_DB_ERROR' :
-                                await rejected( { status: false, code: 505, msg: "database name is not resolved. check database name in constructor configuration", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
-                                break;
-                            case 'ER_GET_CONNECTION_TIMEOUT' :
-                                await rejected({ status: false, code: 505, msg: "connection to database server timed out", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
-                                break;
-                            default :
-                                await rejected({ status: false, code: 505, msg: "An unknown error occurred", error: error});
+                                        });
+                                    /** End Create A Query  **/
+                                }).catch(async (error) => {
+                                switch (error.code){
+                                    case 'ER_BAD_DB_ERROR' :
+                                        await rejected( { status: false, code: 505, msg: "database name is not resolved. check database name in constructor configuration", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
+                                        break;
+                                    case 'ER_GET_CONNECTION_TIMEOUT' :
+                                        await rejected({ status: false, code: 505, msg: "connection to database server timed out", error: { fatal : error.fatal, text : error.text, sqlState : error.sqlState, code : error.code}});
+                                        break;
+                                    default :
+                                        await rejected({ status: false, code: 505, msg: "An unknown error occurred", error: error});
 
-                        }
-                    });
+                                }
+                            });
 
-                    break;
-            }
+                            break;
+                    }
+                }else{
+                    rejected(resLicence)
+                }
+            }).catch(async (err) => {
+                rejected(err);
+            })
+
         });
 
     };
