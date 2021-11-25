@@ -1,6 +1,6 @@
 {
   "name": "dkaframework",
-  "version": "1.0.235",
+  "version": "1.0.236",
   "description": "DKA Framework Multi Function",
   "main": "dist/Framework/Module/index.module.d.js",
   "author": "Yovangga Anandhika",

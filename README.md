@@ -10,7 +10,7 @@
 </p>
 
 ![coverage](https://img.shields.io/badge/coverage-90%25-green)
-![version](https://img.shields.io/badge/version-1.0.2-blue)
+![version](https://img.shields.io/badge/version-1.0.236-blue)
 ![dependencies](https://img.shields.io/badge/dependencies-pass-green)
 ![codacy](https://img.shields.io/badge/level-B-green)
 ![downloads](https://img.shields.io/badge/downloads-2k%2Fmonth-brightgreen)
