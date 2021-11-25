@@ -1,13 +1,13 @@
 {
   "name": "dkaframework",
-  "version": "1.0.236",
+  "version": "1.0.239",
   "description": "DKA Framework Multi Function",
   "main": "dist/Framework/Module/index.module.d.js",
   "author": "Yovangga Anandhika",
   "license": "MIT",
   "private": false,
   "repository": {
-    "url": "git://github.com/YovanggaAnandhika/DKAFramework.git"
+    "url": "git://github.com/DKAResearchCenter/DKAFramework.git"
   },
   "licenses": [
     {
@@ -138,6 +138,7 @@
     "gpio": "^0.2.10",
     "imagemin": "^8.0.1",
     "inquirer": "^8.1.2",
+    "ip": "^1.1.5",
     "jose": "^4.3.7",
     "jquery": "^3.6.0",
     "jquery.redirect": "^1.1.4",

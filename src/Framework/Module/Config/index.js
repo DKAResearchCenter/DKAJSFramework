@@ -12,26 +12,14 @@ const Config = {
         keySecret : "Cyberhack2010Yovangga1997dkaframework"
     },
     FirebaseConfig : {
-        "default" : {
-            apiKey: "AIzaSyCFV8E2Hi2b0ru6L_dwaUdZljeu1MXRunc",
-            authDomain: "dka-apis.firebaseapp.com",
-            databaseURL: "https://dka-apis-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "dka-apis",
-            storageBucket: "dka-apis.appspot.com",
-            messagingSenderId: "797501409741",
-            appId: "1:797501409741:web:85c5ecd5a69e4a81bc5c84",
-            measurementId: "G-1MT7ZM6VKT"
-        },
-        "example" : {
-            apiKey: "AIzaSyCFV8E2Hi2b0ru6L_dwaUdZljeu1MXRunc",
-            authDomain: "dka-apis.firebaseapp.com",
-            databaseURL: "https://dka-apis-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "dka-apis",
-            storageBucket: "dka-apis.appspot.com",
-            messagingSenderId: "797501409741",
-            appId: "1:797501409741:web:85c5ecd5a69e4a81bc5c84",
-            measurementId: "G-1MT7ZM6VKT"
-        }
+        apiKey: "AIzaSyCFV8E2Hi2b0ru6L_dwaUdZljeu1MXRunc",
+        authDomain: "dka-apis.firebaseapp.com",
+        databaseURL: "https://dka-apis-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "dka-apis",
+        storageBucket: "dka-apis.appspot.com",
+        messagingSenderId: "797501409741",
+        appId: "1:797501409741:web:85c5ecd5a69e4a81bc5c84",
+        measurementId: "G-1MT7ZM6VKT"
     },
     Database : {
         MariaDB : {

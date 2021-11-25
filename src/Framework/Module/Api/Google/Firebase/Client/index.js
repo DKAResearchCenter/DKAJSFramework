@@ -27,7 +27,7 @@ class Firebase {
      * @param {firebase.firestore} callback
      * @return {Promise<firebase.firestore>}
      */
-    firestore = new firestore(this.app);
+    firestore = new firestore.getFirestore(this.app);
 
 }
 
