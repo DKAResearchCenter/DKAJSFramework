@@ -86,10 +86,6 @@ const Server = async (config) => {
                 break;
         }
 
-        db = new Database.Google.Firestore()
-                .collection("FRAMEWORK")
-                .doc("ANALYTIC")
-                .collection("FRAMEWORK");
 
     });
 
