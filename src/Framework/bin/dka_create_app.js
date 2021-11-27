@@ -25,13 +25,7 @@ import { Server } from "dkaframework";
 })();
                         `;
 
-const babelConfig = {
-  "presets" : [
-    "@babel/preset-env",
-    "@babel/preset-react"
-  ],
-  "plugins": ["@babel/plugin-proposal-class-properties"]
-};
+
 
 const lang = {
     indonesia : [
@@ -191,16 +185,6 @@ inquirer
                 });
 
                 const b = new Promise( async (resolve, rejected) => {
-                    await fs.writeFile(mBabelConfig, JSON.stringify(babelConfig, null,2) , 'utf-8', function (err){
-                        if (!err){
-                            resolve()
-                        }else{
-                            rejected({ status : false, msg : "Cannot Create Babel RC"})
-                        }
-                    });
-                });
-
-                const c = new Promise( async (resolve, rejected) => {
                     await fs.writeFile(mIndexFile, mainData , 'utf-8', function (err){
                         if (!err){
                             resolve()
@@ -210,8 +194,8 @@ inquirer
                     });
                 });
 
-                await Promise.all([a,b, c]).then(async(res) => {
-                    execSync('yarn install', {stdio: 'inherit'});
+                await Promise.all([a, b]).then(async(res) => {
+                    await execSync('yarn install', {stdio: 'inherit'});
                     console.log(`Success ! : Happy Codding :))`);
                     console.log(`run Code With "yarn run dev" `)
                 }).catch(async(err) => {
