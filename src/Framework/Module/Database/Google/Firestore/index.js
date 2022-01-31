@@ -13,6 +13,7 @@ class Firestore {
      */
     constructor(config) {
         this.config = _.extend(DKA.config.FirebaseConfig, config);
+        DKA.config.FirebaseConfig = this.config
         const app = Firebaseapp.initializeApp(this.config)
         return app.firestore();
     }

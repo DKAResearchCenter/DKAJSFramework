@@ -23,9 +23,7 @@ class AlphaCrypt {
 
         /** Change Text To Hex Variable **/
         let firstFase = Buffer.from(text).toString("hex");
-
         //#######################################################################################
-
         /** Replacing Variable To Algortm Symbol * */
         let twoStep = firstFase.replaceAll("a", "@").replaceAll("b", "?").replaceAll("c","-")
             .replaceAll("d", "!").replaceAll("e", "^").replaceAll("f", "&").replaceAll("g", "(")
@@ -34,7 +32,6 @@ class AlphaCrypt {
             .replaceAll("p", "|").replaceAll("q", "+").replaceAll("r", "'").replaceAll("s", "=")
             .replaceAll("t", '"').replaceAll("u", "/").replaceAll("v", "*").replaceAll("w", ")")
             .replaceAll("x", "[").replaceAll("y", "}").replaceAll("z", ">").replaceAll(" ", "~");
-
         //#######################################################################################
 
         /** Convert Variable Replacing To Base 64 String **/

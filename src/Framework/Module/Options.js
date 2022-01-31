@@ -1,4 +1,5 @@
 import gpio from "gpio";
+import ansiColors from "ansi-colors";
 
 const Options = {
     /**
@@ -36,6 +37,16 @@ const Options = {
     MARIADB_POOL_CLUSTER : 2,
     MARIADB_POOL : 3,
 
+    READY_STATE : `${ansiColors.blue('Ready')}`,
+    LOADING_STATE : `${ansiColors.blue('Loading')}`,
+    LOADED_STATE : `${ansiColors.green('Loaded')}`,
+    COMPLETE_STATE : `${ansiColors.green('Complete')}`,
+    START_STATE : `${ansiColors.green('Start')}`,
+    STOP_STATE : `${ansiColors.red('Stop')}`,
+    ERROR_STATE : `${ansiColors.red('Error')}`,
+    WARNING_STATE : `${ansiColors.bgYellow('Warning')}`,
+
+    DELAY_TIME : 100,
 
     RASPBERRYPI_CORE_CLI : "native",
     RASPBERRY_CORE_GPIO : "gpio",

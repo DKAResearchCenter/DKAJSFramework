@@ -8,6 +8,7 @@ const errorHandler = async (app, config) => {
     const fs = require("fs");
     const io = app.io;
 
+    /** Function If Not Found Handler Data **/
     await app.setNotFoundHandler(async (request, response) => {
         const mHeader = {
             FrameworkName: packages.name,

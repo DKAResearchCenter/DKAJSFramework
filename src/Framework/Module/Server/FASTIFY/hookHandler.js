@@ -2,11 +2,13 @@ import packages from "../../../../../package.json";
 
 const hookHandler = async (app, config) => {
     await app.addHook('onRequest', async (request, reply) => {
+        /** Set Variable data Config Header **/
         const mHeader = {
             FrameworkName: packages.name,
             FrameworkVersion: packages.version,
             FrameworkAuthor: packages.author
         };
+        /** Header Key Configuration data For All get hook **/
         await Object.keys(mHeader).forEach(function (keys) {
             reply.header(keys, mHeader[keys]);
         });

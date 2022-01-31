@@ -19,13 +19,19 @@ program
     .option('-n, --nodemon', 'Use Nodemon With Run')
     .option('-b, --babel', 'Use Babel')
     .action(async (file, options, command) => {
-        const configFilePath = path.join(__dirname, "./babel.config.js");
+        const configFilePath = "./node_modules/dkaframework/dist/Framework/bin/babel.config.js";
         const watchOpt = (options.watch !== undefined) ? `--watch ${options.watch}` : ``;
         const babelOpt = (options.babel !== undefined) ? `babel-node` : `node`;
-        await Base.default().then(async (res) => {
+        await nodemon(`${watchOpt} --exec ${babelOpt} --config-file ${configFilePath} ${file}`);
+        /*await Base.default().then(async (res) => {
             if (res.status){
                 console.log(res);
-                await nodemon(`${watchOpt} --exec ${babelOpt} --config-file \"${configFilePath}\" ${file}`);
+                if (fs.existsSync(configFilePath)){
+                    await nodemon(`${watchOpt} --exec ${babelOpt} --config-file ${configFilePath} ${file}`);
+                }else{
+                    console.error(`Fatal Error, DKA Framework not Installed Locally. please run "npm install dkaframework@latest" or "yarn add dkaframework@latest" `);
+                    process.exit(1);
+                }
             }else{
                 console.log(res)
                 process.exit(1);
@@ -33,7 +39,7 @@ program
         }).catch(async (err) => {
             console.log(err);
             process.exit(1);
-        });
+        });*/
 
     });
 

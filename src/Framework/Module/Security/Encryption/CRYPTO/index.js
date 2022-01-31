@@ -71,8 +71,6 @@ class index {
         return Buffer.from(`${res.iv.toString('hex')}:${encrypted.toString('hex')}`).toString('base64');
     }
 
-
-
     
     decodeIv = async (text) =>
         new Promise(async (resolve, rejected) => {

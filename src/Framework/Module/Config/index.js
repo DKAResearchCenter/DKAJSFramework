@@ -1,7 +1,15 @@
 'use strict';
 'use warning';
+import {Security} from "./../index.module.d";
 import Options from "./../Options";
+import crypto from "crypto";
 import path from "path";
+
+const ALGORITHM = 'aes-256-cbc'
+const BLOCK_SIZE = 16
+const KEY_SIZE = 32
+const key = crypto.randomBytes(KEY_SIZE)
+
 
 
 const Config = {
@@ -20,6 +28,28 @@ const Config = {
         messagingSenderId: "797501409741",
         appId: "1:797501409741:web:85c5ecd5a69e4a81bc5c84",
         measurementId: "G-1MT7ZM6VKT"
+    },
+    Networking : {
+      DHCP : {
+          autoListen : false,
+          range: [
+              "192.168.1.2", "192.168.1.253"
+          ],
+          forceOptions: ['hostname'], // Options that need to be sent, even if they were not requested
+          randomIP: true, // Get random new IP from pool instead of keeping one ip
+          static: {
+              "11:22:33:44:55:66": "192.168.1.100"
+          },
+          // Option settings (there are MUCH more)
+          netmask: '255.255.255.0',
+          router: [
+              '192.168.1.1'
+          ],
+          dns: ["192.168.1.1", "8.8.8.8"],
+          hostname: "dkaframework",
+          broadcast: '192.168.1.255',
+          server: '192.168.1.1',
+      }
     },
     Database : {
         MariaDB : {
@@ -45,6 +75,19 @@ const Config = {
                     column : false,
                     data : false
                 }
+            }
+        },
+        NeDB : {
+            dbName : "default.db",
+            filename : path.join(process.cwd(),`./Database.db`),
+            inMemoryOnly : false,
+            timestampData : false,
+            autoload : false,
+            afterSerialization : function (document) {
+                return document
+            },
+            beforeDeserialization : function (encryptionText) {
+                return encryptionText
             }
         }
     },
@@ -82,6 +125,36 @@ const Config = {
             localtunnel : false,
             secretKey : "Cyberhack2010Yovangga@nandhika2021"
         },
+        library : {
+            socketIo : {
+                /*rememberTransport: false,
+                transports: ['WebSocket', 'Flash Socket', 'AJAX long-polling'],
+                pingTimeout : 3000,
+                pingInterval : 1000,*/
+                cors: {
+                    origin: '*',
+                }
+            }
+        },
+        plugin : {
+            FastifyGracefulShutdown : true,
+            FastifyLog : {
+                enabled : true,
+                options : {}
+            },
+            FastifyHelmet : {
+                enabled : true,
+                options : {
+                    contentSecurityPolicy: false
+                }
+            },
+            FastifyCompress : {
+                enabled : false,
+                options : {
+                    global : true
+                }
+            }
+        },
         /** Fungsi Untuk Melakukan Asset Delarasion Untuk Menentukan Folder Asets Di Dalam System Data **/
         options : {
             /** Deklarasi Menetapkan Lokasi Assets CSS dan JS Dir Dan Gambar Untuk Aplikasi **/
@@ -92,7 +165,7 @@ const Config = {
             autoloadDir : path.join(require.main.filename, "./../App"),
             uploadDir : path.join(require.main.filename, "./../Upload"),
             backupDir : path.join(require.main.filename, "./../Backup")
-            /** **/
+            /** End Function For data Configuration **/
 
         }
     },
@@ -110,7 +183,7 @@ const Config = {
                         port: 9100
                     },
                     serial: {
-                        port: "COM2",
+                        port: "COM3",
                         settings: undefined
                     }
                 },

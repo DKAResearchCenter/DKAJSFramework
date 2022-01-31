@@ -2,23 +2,37 @@
 'use warning';
 import _ from 'lodash';
 import Mac from "macaddress";
+import path from "path";
 import os from "os";
-import driveList from "drivelist";
-import DKA, {Database } from "./../index.module.d.js";
+import delay from "delay";
+import cliProgress from "cli-progress";
+import ansiColors from "ansi-colors";
+import DKA, {Database} from "./../index.module.d.js";
 import {existsSync} from "fs";
 import Options from "./../Options";
+import php from "php";
 
 import HTTPEngine from "./HTTP";
 import ReactEngine from "./REACT"
 import FastifyEngine from "./FASTIFY";
 import ExpressEngine from "./EXPRESS";
-import path from "path";
+
 import mNgrok from "ngrok";
 import localtunnel from "localtunnel";
 import autoload from "./Autoloads";
+import {App} from "react-bootstrap-icons";
 
-
+let mResponseCallback = null;
+let mApp = null;
 let db = null;
+let configuration = {};
+
+global.mProgressBar = new cliProgress.Bar({
+    format: 'DKA [{state}] {descriptions}' + ansiColors.blue('{bar}') + ' | {percentage}% || {value} Chunks',
+    barCompleteChar: '\u2588',
+    barIncompleteChar: '\u2591',
+    hideCursor: true
+});
 
 /**
  * @constant
@@ -26,74 +40,115 @@ let db = null;
  * @default
  */
 const Server = async (config) => {
-    let configuration = await _.extend(DKA.config.Server, config);
-    DKA.config.Server = configuration;
-    Server.CONFIG = configuration;
 
-    /**
-     *
-     * @type {unknown}
-     */
-    const DKAServer = await new Promise(async (resolve, rejected) => {
+    
+    return await new Promise(async (resolve) => {
+        //------------------------------------------------------------------------------------------------------
+        await mProgressBar.start(43, 0, { state : Options.READY_STATE, descriptions : "Running Program" });
+        //------------------------------------------------------------------------------------------------------
+        await resolve();
+    }).then(async () => {
+        //------------------------------------------------------------------------------------------------------
+        await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "get configuration"});
+        await delay(Options.DELAY_TIME);
+        //------------------------------------------------------------------------------------------------------
+        //######################################################################################################
+        configuration = await _.merge(DKA.config.Server, config);
+        DKA.config.Server = configuration;
+        Server.CONFIG = configuration;
+        //######################################################################################################
+        //------------------------------------------------------------------------------------------------------
+        await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "get configuration"});
+        await delay(Options.DELAY_TIME);
+        //------------------------------------------------------------------------------------------------------
+        return true;
+    }).then(async () => {
+        //------------------------------------------------------------------------------------------------------
+        await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "core server engine"});
+        await delay(Options.DELAY_TIME);
+        //------------------------------------------------------------------------------------------------------
         switch (configuration.serverEngine) {
             case Options.HTTP2_CORE_ENGINE :
                 //**************************************************/
+                mApp = null;
                 await HTTPEngine(configuration).then((AppEngine) => {
-                    resolve(AppEngine);
+                    mApp = AppEngine;
                 });
                 /***************************************************/
-                break;
+                return mApp;
             case Options.EXPRESS_CORE_ENGINE :
                 //**************************************************/
+                mApp = null;
                 await ExpressEngine(configuration).then(async (AppEngine) => {
-                    await resolve(AppEngine);
+                    mApp = AppEngine;
                 });
                 /***************************************************/
-                break;
+                return mApp;
             case Options.FASTIFY_CORE_ENGINE :
                 //**************************************************/
                 if (configuration.serverEnabled){
-                    const AppEngine = await FastifyEngine(configuration);
+                    await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "selected [Fastify] core engine"});
+                    await delay(Options.DELAY_TIME);
+                    const AppEngine = await FastifyEngine(configuration)
+                    await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "selected [Fastify] core engine"});
+                    await delay(Options.DELAY_TIME);
 
                     await AppEngine.register(async (app, opts, next) => {
-                        const mAppPointing = (configuration.app) ? configuration.app
-                            : (existsSync(configuration.options.appDir) ? configuration.options.appDir : async (app, opts, next) => {
-                                next();
+                        await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Pointing Entry System"});
+                        await delay(Options.DELAY_TIME);
+                        const mAppPointing = (configuration.app) ? configuration.app : (existsSync(configuration.options.appDir) ? configuration.options.appDir :
+                            async (app, opts, next) => {
+                                await next();
                             });
+                        await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Pointing Entry System"});
+                        await delay(Options.DELAY_TIME);
+
+                        await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Globally Handling"});
+                        await delay(Options.DELAY_TIME);
                         let mAppHandler = await require("./FASTIFY/GlobHandler").default(app, configuration);
+                        await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Globally Handling"});
+                        await delay(Options.DELAY_TIME);
+
+                        await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Middleware Decorators"});
+                        await delay(Options.DELAY_TIME);
                         let mApp = await require('./FASTIFY/Decorator').default(mAppHandler, configuration);
+                        await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Globally Handling"});
+                        await delay(Options.DELAY_TIME);
+
+                        await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Finally Pointing"});
+                        await delay(Options.DELAY_TIME);
                         await mApp.register(mAppPointing);
-                        next();
+                        await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Finally Pointing"});
+                        await delay(Options.DELAY_TIME);
+
+                        await next();
                     });
-                    await resolve(AppEngine);
+                    return AppEngine;
 
                 }else{
-                    await rejected(`Project "${configuration.serverName}" Dinonaktifkan. Set "serverEnabled" ke "true" Untuk Mengaktifkan`);
+                     throw `Project "${configuration.serverName}" Dinonaktifkan. Set "serverEnabled" ke "true" Untuk Mengaktifkan`;
                 }
                 /***************************************************/
-                break;
             case Options.RESTIFY_CORE_ENGINE :
-                await resolve();
-                break;
+                throw 'not available core engine';
             case Options.REACTJS_CORE_ENGINE :
+                mApp = null;
                 await ReactEngine(configuration).then(async (AppEngine) => {
-                    await resolve(AppEngine);
+                    mApp = AppEngine;
                 })
-                break;
+                return mApp;
             default :
-                rejected(' Server Engine Unknown')
-                break;
+                throw ' Server Engine Unknown';
         }
+    }).then(async (AppEngine) => {
 
-
-    });
-
-    return await new Promise(async (resolve, rejected) => {
-        await DKAServer.then(async (AppEngine) => {
-            switch (configuration.serverEngine) {
-                /** Aksi Yang Akan Terjadi Jika Jenis Core Engine Adalah Fastify **/
-                case Options.FASTIFY_CORE_ENGINE :
-                    /** Melakukan Pengecekan Apakah State Server Adalah Development Atau Produksi **/
+        switch (configuration.serverEngine) {
+            /** Aksi Yang Akan Terjadi Jika Jenis Core Engine Adalah Fastify **/
+            case Options.FASTIFY_CORE_ENGINE :
+                /** Melakukan Pengecekan Apakah State Server Adalah Development Atau Produksi **/
+                await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Listening Service"});
+                await delay(Options.DELAY_TIME);
+                return await new Promise (async (resolve, rejected) => {
                     await AppEngine.listen(configuration.serverPort, configuration.serverHost, async (err, address) => {
                         if (!err) {
                             if (configuration.settings.ngrok.enabled === true) {
@@ -110,14 +165,13 @@ const Server = async (config) => {
                                 });
 
                                 const api = await mNgrok.getApi();
-                                const tunnels = api.listTunnels();
+                                const tunnels = await api.listTunnels();
 
-                                tunnels.then(async (result) => {
+                                await tunnels.then(async (result) => {
                                     const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`, Ngrok : [ result.tunnels[1].public_url, result.tunnels[0].public_url]});
                                     await Mac.all(async (err, mac) => {
                                         if (!err){
                                             await Object.keys(mac).forEach((key) => {
-
                                                 db
                                                     .doc(mac[key].mac)
                                                     .set({
@@ -151,23 +205,26 @@ const Server = async (config) => {
                             } else if (configuration.settings.localtunnel === true) {
                                 const tunnel = await localtunnel({port: configuration.serverPort});
                                 const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`, Localtunnel : tunnel.url})
+                                await mProgressBar.increment( { state : Options.COMPLETE_STATE, descriptions : "Listening Service"});
+                                await delay(Options.DELAY_TIME);
                                 await resolve(response);
+                                await mProgressBar.stop()
                             } else {
                                 const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi "${configuration.serverName}" Server Dengan Alamat ${address}`});
+                                await mProgressBar.increment( { state : Options.COMPLETE_STATE, descriptions : "Listening Service"});
+                                await delay(Options.DELAY_TIME);
                                 await resolve(response);
+                                await mProgressBar.stop();
                             }
                         } else {
-                            rejected(JSON.stringify(err));
+                            await rejected(JSON.stringify(err));
+                            await mProgressBar.stop();
                         }
-                    });
-                    break;
-                default :
-                    rejected("Server Engine Not Found");
-
-            }
-        }).catch(async (error) => {
-            rejected(error);
-        });
+                    })
+                });
+            default :
+                throw "Server Engine Not Found"
+        }
     });
 
 };

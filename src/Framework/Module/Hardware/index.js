@@ -1,13 +1,13 @@
-'use strict';
-'use warnings';
-import RaspberryPi from "./RaspberryPi";
+import Camera from "./Camera";
+import Mikrotik from "./Mikrotik";
+import Nfc from "./Nfc";
 import Printer from "./Printer";
 
 const Hardware = {
-    RaspberryPi : RaspberryPi,
-    Printer : Printer,
+    Camera : Camera,
+    Mikrotik : Mikrotik,
+    Nfc : Nfc,
+    Printer : Printer
 };
 
-
 export default Hardware;
-export { RaspberryPi, Printer }

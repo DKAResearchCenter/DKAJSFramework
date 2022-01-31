@@ -17,6 +17,7 @@ import Server from "./Server";
 import Security from "./Security";
 import Config from "./Config";
 import Database from "./Database";
+import Document from "./Document";
 import Options from "./Options";
 import Hardware from "./Hardware";
 import Api from "./Api";
@@ -31,6 +32,7 @@ const DKA = {
     Helper : Helper,
     Security: Security,
     Database: Database,
+    Document : Document,
     Server : Server,
     Options : Options,
     Hardware : Hardware,
@@ -39,14 +41,14 @@ const DKA = {
         return Config;
     },
     set config(config) {
-        Config = _.extend(Config, config)
+        Config = _.merge(Config, config)
     }
 };
-
+/** Declalration Global Variable **/
 global.DKA = DKA;
 global.Server = Server;
 global.DKAnum = 0;
 global.DKAServerConfig = [];
 
-export { Functions, Helper, Security, Database, Server, Options, Hardware, Api };
+export { Functions, Helper, Security, Database, Document, Server, Options, Hardware, Api };
 export default DKA;

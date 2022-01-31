@@ -66,7 +66,7 @@ const Autoload = async () => {
                                     }
 
                                 }else{
-                                    console.log(chalk.redBright(`File "index.js" Format Tidak Dikenali Di Folder "${file}". Harap Periksa File "app.js" Di Dalam Folder "${file}"`));
+                                    console.log(chalk.redBright(`File "index.js" Format Tidak Dikenali Di Folder "${file}". Harap Periksa File "index.js" Di Dalam Folder "${file}"`));
                                 }
                             }else{
                                 console.log(chalk.redBright(`File "index.js" Tidak Ditemukan Di Folder "${file}" . Harap Buat File "index.js" Di Dalam Folder "${file}"`));

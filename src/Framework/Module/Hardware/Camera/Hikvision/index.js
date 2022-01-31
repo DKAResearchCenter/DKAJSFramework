@@ -12,3 +12,5 @@ class Hikvision {
 
     getStream
 }
+
+export default Hikvision;

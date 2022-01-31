@@ -6,6 +6,7 @@ import MySQL from "./MySQL";
 import MariaDB from "./MariaDB";
 import MongoDB from "./MongoDB";
 import Oracle from "./Oracle";
+import NeDB from "./NEDB";
 import POSTGRES from "./POSTGRES";
 import Google from "./Google";
 
@@ -16,10 +17,11 @@ const Database = {
     JSONDB : JSONDB,
     MySQL : MySQL,
     Google : Google,
+    NeDB : NeDB,
     MariaDB : MariaDB,
     MongoDB : MongoDB,
     Oracle : Oracle
 };
 
 export default Database;
-export {JSONDB, MySQL, Google, MariaDB, MongoDB, Oracle};
+export {JSONDB, MySQL, Google, NeDB, MariaDB, MongoDB, Oracle};

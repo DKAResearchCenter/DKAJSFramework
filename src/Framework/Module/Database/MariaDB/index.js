@@ -5,12 +5,17 @@ import {join} from "path";
 import mysqldump from 'mysqldump';
 import _ from "lodash";
 import moment from "moment";
+import cliProgress from "cli-progress";
+import ansiColors from "ansi-colors";
+import emojic from "node-emoji";
 import {existsSync, mkdirSync} from "fs";
 import {error} from "winston";
 /**
  * Functions Fot Class Mysql Database In Framework
  * All Right Reserved
  * **/
+
+
 
 /**
  * @description Ini Adalah Module Library Yang Berisi Konfigurasi Server Untuk Membangun Sebuah Arsitektur Webserver
@@ -105,6 +110,13 @@ class MariaDB {
     static get MARIADB_METHOD_RAW() {
         return 5;
     };
+    /***
+     *
+     * @returns {number}
+     */
+    static get MARIADB_METHOD_PROCEDURE() {
+        return 6;
+    };
 
 
     /**
@@ -134,6 +146,8 @@ class MariaDB {
         const MariaDBEngine = require("mariadb");
         moment.locale("id");
 
+
+
         switch (this.options.encryption.engine){
             case Options.ENCRYPTION_ENGINE_CRYPTO :
                 this.EncryptionModule = new Security.Encryption.Crypto({
@@ -141,10 +155,13 @@ class MariaDB {
                     secretKey : this.options.encryption.secretKey
                 });
                 break;
-
             default :
                 this.EncryptionModule = new Security.Encryption.Crypto();
         }
+
+        //------------------------------------------------------------------------------------------------------
+        emojic.emojify(`:computer ${ansiColors.blue(`Prepare MariaDB Connection`)}`);
+        //------------------------------------------------------------------------------------------------------
 
         switch (this.options.engine){
             case MariaDB.MARIADB_POOL :
@@ -216,7 +233,7 @@ class MariaDB {
             this.mKey = [];
             this.mVal = [];
 
-            Object.keys(Rule.data).forEach((key) => {
+            await Object.keys(Rule.data).forEach((key) => {
                 this.mKey.push(` \`${(this.options.encryption.enabled && this.options.encryption.options.column) ? this.EncryptionModule.encodeIvSync(`${key}`) : key}\` `);
 
                 this.mVal.push(`"${(this.options.encryption.enabled && this.options.encryption.options.column) ? this.EncryptionModule.encodeIvSync(`${Rule.data[key]}`) : Rule.data[key]}"`);
@@ -232,7 +249,7 @@ class MariaDB {
             let mVal = [];
             let mKey = [];
             let mSetData = [];
-            Rule.data.forEach(function (item, index,) {
+            await Rule.data.forEach(function (item, index,) {
                 mKey = [];
                 mSetData = [];
                 Object.keys(item).forEach(function (key) {
@@ -265,7 +282,7 @@ class MariaDB {
     Read = async (TableName, Rules = {}) => {
         this.#method = MariaDB.MARIADB_METHOD_READ;
         /** lodash Extend JSON COnfig **/
-        const Rule = _.extend({
+        const Rule = await _.extend({
             as: false,
             column : [],
             orderBy : {
@@ -285,12 +302,11 @@ class MariaDB {
         let TypeData = Rule.search instanceof Array;
 
         if (!TypeData) {
-            Object.keys(Rule.search).forEach( (item) => {
+            await Object.keys(Rule.search).forEach( (item) => {
                 this.mSearchAdd += `\'${(this.options.encryption.enabled) ? this.EncryptionModule.encodeIvSync(item).toString() : item}\' = \'${(this.options.encryption.enabled) ? this.EncryptionModule.encodeIvSync(Rule.search[item]) : Rule.search[item]}\' `;
-
-            })
+            });
         }else{
-            Rule.search.forEach((item) => {
+            await Rule.search.forEach((item) => {
                 if (item instanceof Object) {
                     Object.keys(item).forEach((k) => {
                         this.mSearchAdd += `\`${k}\`=\'${item[k]}\' `;
@@ -313,6 +329,13 @@ class MariaDB {
         return this.rawQuerySync(mSQL, []);
     }
     Baca = this.Read;
+
+
+    Procedure = async (FunctionName = null, ArrayData = []) => {
+        this.#method = MariaDB.MARIADB_METHOD_PROCEDURE;
+        const mSQL = `CALL ${FunctionName}(${ArrayData})`;
+        return this.rawQuerySync(mSQL,[]);
+    }
     /**
      * @constructor
      * @param {String} TableName
@@ -525,17 +548,30 @@ class MariaDB {
                         .then(async (conn) => {
                             //console.log(err)
                             /** Create A Query  **/
+                            //------------------------------------------------------------------------------------------------------
+                            emojic.emojify(`:computer ${ansiColors.blue(`Ready Connection Database`)}`);
+                            //------------------------------------------------------------------------------------------------------
                             await conn.query(mSQLString, ArrayParams)
                                 .then(async (rows) => {
-                                    let timeEnd = new Date().getTime();
+                                    let timeEnd = await new Date().getTime();
+                                    //------------------------------------------------------------------------------------------------------
+                                    await emojic.emojify(`:computer ${ansiColors.blue(`Getting Data from Database`)}`);
+                                    //------------------------------------------------------------------------------------------------------
                                     let metadata = { activeConnections : this.DBInstance.activeConnections(), idleConnections : this.DBInstance.idleConnections(), totalConnections : this.DBInstance.totalConnections(), sqlRaw : SQLString, timeExecuteinSecond : `${(timeEnd- timeStart)} ms` };
                                     switch (this.#method){
+                                        /** **
+                                         * @description
+                                         * this Is Action For Method Create Tables
+                                         */
                                         case MariaDB.MARIADB_METHOD_CREATE_TABLE :
                                             //###########################################################################
                                             await (rows.warningStatus < 1) ?
                                                 await resolve({ status: true, code: 200, msg: `successful, your data has been created`, metadata : metadata}) :
-                                                await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, metadata : metadata});
+                                                await rejected({ status: false, code: 201, msg: `warning status detected. Check Warning Message`, metadata : metadata});
                                             await conn.release();
+                                            //------------------------------------------------------------------------------------------------------
+                                            await emojic.emojify(`:computer ${ansiColors.blue(`Release Connection Database Instance`)}`);
+                                            //------------------------------------------------------------------------------------------------------
                                             //###########################################################################
                                             break;
                                         case MariaDB.MARIADB_METHOD_CREATE :
@@ -546,6 +582,9 @@ class MariaDB {
                                                     await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, id : rows.insertId, metadata : metadata})
                                                 : await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
                                             await conn.release();
+                                            //------------------------------------------------------------------------------------------------------
+                                            await emojic.emojify(`:computer ${ansiColors.blue(`Release Connection Database Instance`)}`);
+                                            //------------------------------------------------------------------------------------------------------
                                             //###########################################################################
                                             break;
                                         case MariaDB.MARIADB_METHOD_READ :
@@ -562,15 +601,38 @@ class MariaDB {
                                                     })
                                                     await resolve({ status: true, code: 200, msg: `successful, your data has been read`, data : dataArray, metadata : metadata});
                                                     await conn.release();
+                                                    //------------------------------------------------------------------------------------------------------
+                                                    await emojic.emojify(`:computer ${ansiColors.blue(`Release Connection Database Instance`)}`);
+                                                    //------------------------------------------------------------------------------------------------------
                                                 }else{
                                                     await resolve({ status: true, code: 200, msg: `successful, your data has been read`, data : rows, metadata : metadata});
                                                     await conn.release();
+                                                    //------------------------------------------------------------------------------------------------------
+                                                    await emojic.emojify(`:computer ${ansiColors.blue(`Release Connection Database Instance`)}`);
+                                                    //------------------------------------------------------------------------------------------------------
                                                 }
 
                                             }else{
                                                 await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
                                                 await conn.release();
+                                                //------------------------------------------------------------------------------------------------------
+                                                await emojic.emojify(`:computer ${ansiColors.blue(`Release Connection Database Instance`)}`);
+                                                //------------------------------------------------------------------------------------------------------
                                             }
+                                            //###########################################################################
+                                            break;
+                                        case MariaDB.MARIADB_METHOD_PROCEDURE :
+                                            //###########################################################################
+                                            const mergerData = _.merge({ status : false, code : 505, metadata : metadata}, rows[0][0].response);
+                                            if (mergerData.status){
+                                                await resolve(mergerData);
+                                            }else{
+                                                rejected(mergerData)
+                                            }
+                                            await conn.release();
+                                            //------------------------------------------------------------------------------------------------------
+                                            await emojic.emojify(`:computer ${ansiColors.blue(`Release Connection Database Instance`)}`);
+                                            //------------------------------------------------------------------------------------------------------
                                             //###########################################################################
                                             break;
                                         case MariaDB.MARIADB_METHOD_UPDATE :
@@ -580,6 +642,9 @@ class MariaDB {
                                                     await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
                                                 await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
                                             await conn.release();
+                                            //------------------------------------------------------------------------------------------------------
+                                            await emojic.emojify(`:computer ${ansiColors.blue(`Release Connection Database Instance`)}`);
+                                            //------------------------------------------------------------------------------------------------------
                                             break;
                                         case MariaDB.MARIADB_METHOD_DELETE :
                                             await (rows.affectedRows > 0) ?
@@ -588,6 +653,9 @@ class MariaDB {
                                                     await rejected({status: false, code: 201, msg: `warning status detected. Check Warning Message`, rows : rows.affectedRows, metadata : metadata}) :
                                                 await rejected({status: false, code: 404, msg: `Succeeded, But No Data Changed`, metadata : metadata});
                                             await conn.release();
+                                            //------------------------------------------------------------------------------------------------------
+                                            await emojic.emojify(`:computer ${ansiColors.blue(`Release Connection Database Instance`)}`);
+                                            //------------------------------------------------------------------------------------------------------
                                             break;
                                         default :
                                             //###########################################################################
@@ -595,6 +663,9 @@ class MariaDB {
                                                 await resolve({ status: true, code: 200, msg: `successful, your data has been execute`, data : rows, metadata : metadata}) :
                                                 await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
                                             await conn.release();
+                                            //------------------------------------------------------------------------------------------------------
+                                            await emojic.emojify(`:computer ${ansiColors.blue(`Release Connection Database Instance`)}`);
+                                            //------------------------------------------------------------------------------------------------------
                                             //###########################################################################
                                             break;
                                     }
@@ -603,10 +674,16 @@ class MariaDB {
                                         case 'ER_TABLE_EXISTS_ERROR' :
                                             await rejected({ status: false, code: 500, msg: "Failed, Table Name Is Exists", error: { errorMsg : err.text, errorCode : err.code, errNo : err.errno }});
                                             await conn.release();
+                                            //------------------------------------------------------------------------------------------------------
+                                            await emojic.emojify(`:computer ${ansiColors.blue(`Release Connection Database Instance`)}`);
+                                            //------------------------------------------------------------------------------------------------------
                                             break;
                                         default :
                                             await rejected({ status: false, code: 500, msg: "Error Detected", error: { errorMsg : err.text, errorCode : err.code, errNo : err.errno }});
                                             await conn.release();
+                                            //------------------------------------------------------------------------------------------------------
+                                            await emojic.emojify(`:computer ${ansiColors.blue(`Release Connection Database Instance`)}`);
+                                        //------------------------------------------------------------------------------------------------------
                                     }
 
                                 });
@@ -628,7 +705,6 @@ class MariaDB {
                 case MariaDB.MARIADB_POOL_CLUSTER:
                     this.DBInstance.getConnection()
                         .then(async (conn) => {
-                            //console.log(err)
                             /** Create A Query  **/
                             await conn.query(mSQLString, ArrayParams)
                                 .then(async (rows) => {
