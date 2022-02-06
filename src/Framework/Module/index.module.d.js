@@ -10,6 +10,7 @@
  * All Right Reserved.
  * */
 import _ from "lodash";
+import tensor from "@tensorflow/tfjs-core";
 
 import Functions from "./Functions";
 import Helper from "./Helper";
@@ -49,6 +50,5 @@ global.DKA = DKA;
 global.Server = Server;
 global.DKAnum = 0;
 global.DKAServerConfig = [];
-
 export { Functions, Helper, Security, Database, Document, Server, Options, Hardware, Api };
 export default DKA;

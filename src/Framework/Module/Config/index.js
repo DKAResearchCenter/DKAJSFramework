@@ -5,13 +5,6 @@ import Options from "./../Options";
 import crypto from "crypto";
 import path from "path";
 
-const ALGORITHM = 'aes-256-cbc'
-const BLOCK_SIZE = 16
-const KEY_SIZE = 32
-const key = crypto.randomBytes(KEY_SIZE)
-
-
-
 const Config = {
     /**
      * @param {Object} Global
@@ -93,7 +86,7 @@ const Config = {
     },
     Server : {
         /** ServerName For Naming App Server **/
-        serverName : "Unknown",
+        serverName : require(path.join(process.cwd(),'package.json')).name,
         /** Server Domain For Naming Service Domain Access **/
         serverDomain : false,
         /** Server State Overide Enable and Disabled **/
@@ -116,6 +109,9 @@ const Config = {
         app : false,
         /** Setting System Settings **/
         settings : {
+            reactOpen : false,
+            reactHot : false,
+            reactCompress : true,
             firewall : [],
             /** Ngrok Tunneling **/
             ngrok : {
@@ -155,12 +151,55 @@ const Config = {
                 }
             }
         },
+        Webpack : {
+            mode: "development",
+            module: {
+                rules: [
+                    {
+                        test: /\.(js|jsx)$/,
+                        exclude: /node_modules/,
+                        use: {
+                            loader: "babel-loader",
+                            options: {
+                                presets: ['@babel/preset-env','@babel/preset-react'],
+                                plugins: [
+                                    "@babel/plugin-proposal-class-properties",
+                                    "@babel/plugin-transform-arrow-functions"
+                                ]
+                            }
+                        },
+                    },
+                    {
+                        test: /\.css$/i,
+                        use: ["style-loader", "css-loader"],
+                    },
+                    {
+                        test: /\.(png|jpe?g|gif|svg)$/i,
+                        use: [
+                            {
+                                loader: 'file-loader',
+                            },
+                            {
+                                loader: 'img-loader'
+                            }
+                        ],
+                    },
+                ],
+            },
+            resolve: {
+                extensions: ['.js', '.jsx', '.ts', '.tsx'],
+            },
+            target: 'web'
+        },
         /** Fungsi Untuk Melakukan Asset Delarasion Untuk Menentukan Folder Asets Di Dalam System Data **/
         options : {
             /** Deklarasi Menetapkan Lokasi Assets CSS dan JS Dir Dan Gambar Untuk Aplikasi **/
             layoutDir : path.join(require.main.filename,"./../Layout"),
             assetsDir : path.join(require.main.filename, "./../Assets"),
+            publicDir : path.join(require.main.filename, "./../Public"),
             appDir : path.join(require.main.filename, "./../Controller"),
+            srcDir : path.join(require.main.filename, "./../../src"),
+            distDir : path.join(require.main.filename, "./../../dist"),
             /** Fungsi Untuk Melakukan Folder Upload Di dalam aplikasi **/
             autoloadDir : path.join(require.main.filename, "./../App"),
             uploadDir : path.join(require.main.filename, "./../Upload"),
