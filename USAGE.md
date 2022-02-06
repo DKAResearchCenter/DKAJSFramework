@@ -25,10 +25,11 @@ dka [options,..] <file>
   **-d, --debug** show debug process on console
 
 ### import/require module in your js program
-```
-import { Server, Database } from "dkaframework";
-```
+
+``import { Server, Database } from "dkaframework";``
+
 or
-```
-const { Server, Database } = require("dkaframework");
-```
+
+``const { Server, Database } = require("dkaframework");``
+
+like in **[index.js](https://github.com/DKAResearchCenter/DKAJSFramework/blob/80b361a8cd99c647064cc8f478ddcc5b8b3b52f2/Example/index.js#L2)**
