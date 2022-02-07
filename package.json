@@ -28,6 +28,7 @@
     "docs": "jsdoc -c jsdoc.json --verbose",
     "compile-compile": "webpack",
     "compile": "babel --source-maps --copy-files --no-copy-ignored -d dist/ src/",
+    "dev" : "yarn run compile && nodemon --watch Example --exec babel-node ./Example/index.js",
     "compile-ts": "npx tsc",
     "upload": "yarn login && yarn run compile && npm publish",
     "yarn-audit": "yarn-audit-fix"
