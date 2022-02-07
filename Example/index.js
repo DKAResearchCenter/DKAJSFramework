@@ -1,13 +1,9 @@
 /** import module parent **/
 import { Database, Server } from "./../";
+import server from "./server";
 
 (async () => {
-    await Server({
-        serverPort : 1999,
-        app : false
-    }).then(async (result) => {
-        console.info(result)
-    }).catch(async (error) => {
-        console.error(error)
-    })
+
+    await server();
+
 })();
