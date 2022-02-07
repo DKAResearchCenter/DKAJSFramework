@@ -4,9 +4,20 @@ import server from "./server";
 import db from "./database"
 
 (async () => {
-    /** server example from server.js class **/
-    await server();
-    /** database example from database.js class **/
-    await db();
+    const testPromise = Promise.all([
+        /** server example from server.js class **/
+        server,
+        /** database example from database.js class **/
+        /*db*/
+    ]);
+
+    await testPromise
+        .then(async (res) => {
+            console.info(res);
+        }).catch(async (err) => {
+            //console.error(err)
+        })
+
+
 
 })();
