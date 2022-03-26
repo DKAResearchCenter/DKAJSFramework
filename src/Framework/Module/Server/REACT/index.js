@@ -18,10 +18,16 @@ export default (config) => new Promise((resolve, reject) => {
 
     mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "merged setting for react webpack"});
     delay(Options.DELAY_TIME);
-
+    /** Merger Configuration Data Merger Object
+     * @param {Number} configuration
+     *
+     * **/
     let configuration = _.merge( {
+        /** Server State Mode Server Less Object Settings **/
         mode: serverState,
+        /** Entry Point Path File Loader Builder Native App.js Location Default**/
         entry : path.join(require.main.filename, './../app.js'),
+        /** Output Data Engine The Path And JS Output Path **/
         output: {
             /** path Destination After Compile **/
             path: config.options.distDir,
@@ -32,16 +38,17 @@ export default (config) => new Promise((resolve, reject) => {
             writeToDisk: true
         },
         plugins: [
+            /** Generate HTML Webpack Plugin data For Generation Webpack HTML React JS**/
             new HtmlWebpackPlugin(
                 {
-                    template: path.resolve(config.options.publicDir, "./index.html")
+                    template : path.resolve(config.options.publicDir, "./index.html")
                 })
         ]
     }, config.Webpack);
 
     mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "merged setting for react webpack"});
     delay(Options.DELAY_TIME);
-
+    /** Checing Sserver Starts Data Start Development **/
     if (config.serverState === Options.SERVER_STATE_DEVELOPMENT){
         console.log(`entry config ${configuration.entry}`);
         console.log(`path config ${configuration.output.path}`);
@@ -52,6 +59,7 @@ export default (config) => new Promise((resolve, reject) => {
         await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "checking output path react"});
         await delay(Options.DELAY_TIME);
         if (!fs.existsSync(configuration.output.path)){
+            /** Create Fs Mkdir Sytnc Configuration Data in the Path Data Connection **/
             await fs.mkdirSync(configuration.output.path);
             await fs.chmodSync(configuration.output.path,777)
         }

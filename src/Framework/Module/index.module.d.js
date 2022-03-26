@@ -19,6 +19,7 @@ import Security from "./Security";
 import Config from "./Config";
 import Database from "./Database";
 import Document from "./Document";
+import Networking from "./Networking";
 import Options from "./Options";
 import Hardware from "./Hardware";
 import Api from "./Api";
@@ -36,6 +37,7 @@ const DKA = {
     Document : Document,
     Server : Server,
     Options : Options,
+    Networking : Networking,
     Hardware : Hardware,
     Api : Api,
     get config() {
@@ -50,5 +52,5 @@ global.DKA = DKA;
 global.Server = Server;
 global.DKAnum = 0;
 global.DKAServerConfig = [];
-export { Functions, Helper, Security, Database, Document, Server, Options, Hardware, Api };
+export { Functions, Helper, Security, Database, Document, Server, Options, Networking, Hardware, Api };
 export default DKA;

@@ -1,10 +1,12 @@
 import adb from "./Adb";
 import DHCP from "./DHCP";
+import FTP from "./FTP";
 
 const Networking = {
     adb : adb,
-    DHCP : DHCP
+    DHCP : DHCP,
+    FTP : FTP
 };
 
-export { adb, DHCP };
+export { adb, DHCP, FTP };
 export default Networking;

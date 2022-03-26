@@ -2,12 +2,16 @@
 import { Database, Server } from "./../";
 import server from "./server";
 import db from "./database"
+import vpn from "./vpn";
+import ftp from "./ftp";
 
 (async () => {
     const testPromise = Promise.all([
         /** server example from server.js class **/
         server,
         /** database example from database.js class **/
+        /*vpn,*/
+        /*ftp,*/
         /*db*/
     ]);
 
@@ -15,8 +19,8 @@ import db from "./database"
         .then(async (res) => {
             console.info(res);
         }).catch(async (err) => {
-            //console.error(err)
-        })
+            console.error(err)
+        });
 
 
 

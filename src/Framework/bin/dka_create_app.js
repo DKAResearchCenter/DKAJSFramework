@@ -22,8 +22,7 @@ import { Server } from "dkaframework";
     }).catch(async(err) => {
         console.log(err);
     });
-})();
-                        `;
+})();`;
 
 
 

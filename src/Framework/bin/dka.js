@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 const mPackage = require("./../../../package.json");
 const path = require("path");
+const babel = require("@babel/core");
 const nodemon = require("nodemon");
 const { spawn } = require('child_process');
 const { Command } = require("commander");
+const net = require("net");
 const program = new Command();
 
 (async () => {
+    let nodemonInst = null;
+
     await program
         .version(mPackage.version)
         .arguments("<file>")
@@ -22,20 +26,43 @@ const program = new Command();
             const babelOpt = (options.babel !== undefined) ? ` babel-node` : ` node`;
             const configBabel = (options.babel !== undefined) ? ` --config-file ${configFilePath}` : ``;
 
-            if (options.nodemon !== undefined){
-                const finalScript = `${watchOpt} --exec${babelOpt}${configBabel} ${file}`;
-                if (options.debug !== undefined){
-                    console.log(`#### --- nodemon ${finalScript} --- ####`);
-                }
+            await new Promise(async (resolve, rejected) => {
+                if (options.nodemon !== undefined){
+                    const finalScript = `${watchOpt} --exec${babelOpt}${configBabel} ${file}`;
+                    if (options.debug !== undefined){
+                        console.log(`#### --- nodemon ${finalScript} --- ####`);
+                    }
 
-                await nodemon(finalScript)
-            }else{
-                const finalScript = `${watchOpt} --exec${babelOpt}${configBabel} ${file}`;
-                if (options.debug !== undefined){
-                    console.log(`#### --- node ${finalScript} --- ####`);
+                    nodemonInst = await nodemon(finalScript);
+                    resolve()
+                }else{
+                    const finalScript = `${watchOpt} --exec${babelOpt}${configBabel} ${file}`;
+                    if (options.debug !== undefined){
+                        console.log(`#### --- node ${finalScript} --- ####`);
+                    }
+                    nodemonInst = await nodemon(finalScript)
+                    resolve()
                 }
-                await nodemon(finalScript);
-            }
+            }).then(async () => {
+                const io = require("./Component/io");
+                return io(nodemonInst);
+            }).finally(async () => {
+                await nodemon.once('start', async () => {
+                    console.log(`DKA Engine V.${mPackage.version}. Program Starting ...`);
+                }).on('crash', function () {
+                    console.log(`DKA Program Has Detecting Crash ...`);
+                    //process.exit(1);
+                }).on('quit', function () {
+                    console.log(`DKA Program V.${mPackage.version} Has Quit ...`);
+                }).on('restart', function (files) {
+                    console.log(`The DKA Program V.${mPackage.version} has Restarted.`);
+                });
+            })
+
+
+
+
+
             /*await Base.default().then(async (res) => {
                 if (res.status){
                     console.log(res);
@@ -57,19 +84,4 @@ const program = new Command();
         });
 
     await program.parse(process.argv);
-
-    await nodemon.once('start', async () => {
-        console.log(`DKA Engine V.${mPackage.version}. Program Starting ...`);
-    }).on('crash', function () {
-        console.log(`DKA Program Has Detecting Crash ...`);
-        process.exit(1);
-    }).on('exit', function () {
-        console.log(`DKA Program Has Stopped ...`);
-        process.exit();
-    }).on('quit', function () {
-        console.log(`DKA Program V.${mPackage.version} Has Quit ...`);
-        process.exit(1);
-    }).on('restart', function (files) {
-        console.log(`The DKA Program V.${mPackage.version} has Restarted.`);
-    });
 })();

@@ -73,7 +73,6 @@ class Escpos {
                         await rejected({ status : false, code : 404, msg : `Error, Printer Device Not Detected` });
                     }
 
-
                     /** End Find The Printer Function */
                     //##################################################################
                     break;
