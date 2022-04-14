@@ -24,24 +24,27 @@ const Config = {
     },
     Networking : {
       DHCP : {
-          autoListen : false,
+          interface: 'Ethernet',
           range: [
-              "192.168.1.2", "192.168.1.253"
+              "192.168.3.10", "192.168.3.99"
           ],
-          forceOptions: ['hostname'], // Options that need to be sent, even if they were not requested
-          randomIP: true, // Get random new IP from pool instead of keeping one ip
-          static: {
-              "11:22:33:44:55:66": "192.168.1.100"
-          },
-          // Option settings (there are MUCH more)
+          static: [
+              {
+                  hostname: 'host1',
+                  mac_address: 'xx:xx:xx:xx:xx:xx',
+                  ip_address: '192.168.3.2'
+              }
+          ],
+          network: '192.168.3.0',
           netmask: '255.255.255.0',
-          router: [
-              '192.168.1.1'
-          ],
-          dns: ["192.168.1.1", "8.8.8.8"],
-          hostname: "dkaframework",
-          broadcast: '192.168.1.255',
-          server: '192.168.1.1',
+          router: '192.168.3.1',        // can be string or array
+          dns: ["8.8.8.8", "8.8.4.4"],  // can be string or array
+          broadcast: '192.168.3.255',
+          on_commit: `
+                        //set your script here
+                        set ClientIP = binary-to-ascii(10, 8, ".", leased-address);
+                        execute("/usr/bin/curl", concat("http://localhost/check-ip?ip=", ClientIP));
+                     `
       }
     },
     Database : {

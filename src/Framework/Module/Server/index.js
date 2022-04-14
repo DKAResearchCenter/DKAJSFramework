@@ -196,79 +196,86 @@ const Server = async (config) => {
                 await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Listening Service"});
                 await delay(Options.DELAY_TIME);
                 return await new Promise (async (resolve, rejected) => {
-                    await AppEngine.listen(configuration.serverPort, configuration.serverHost, async (err, address) => {
+                    await AppEngine.ready(async (err) => {
+                        if (!err){
+                            await AppEngine.listen(configuration.serverPort, configuration.serverHost, async (err, address) => {
 
-                        if (!err) {
-                            if (configuration.settings.ngrok.enabled === true) {
-                                await mNgrok.connect({
-                                    addr : configuration.serverPort,
-                                    authtoken : configuration.settings.ngrok.authToken,
-                                    onStatusChange : _ => {
+                                if (!err) {
+                                    if (configuration.settings.ngrok.enabled === true) {
+                                        await mNgrok.connect({
+                                            addr : configuration.serverPort,
+                                            authtoken : configuration.settings.ngrok.authToken,
+                                            onStatusChange : _ => {
 
-                                    }, onLogEvent : _ => {
+                                            }, onLogEvent : _ => {
 
-                                    }
-                                }).catch((e) => {
-                                    rejected(e.toString())
-                                });
+                                            }
+                                        }).catch((e) => {
+                                            rejected(e.toString())
+                                        });
 
-                                const api = await mNgrok.getApi();
-                                const tunnels = await api.listTunnels();
+                                        const api = await mNgrok.getApi();
+                                        const tunnels = await api.listTunnels();
 
-                                await tunnels.then(async (result) => {
-                                    const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi '${configuration.serverName}' Server Dengan Alamat ${address}`, Ngrok : [ result.tunnels[1].public_url, result.tunnels[0].public_url]});
-                                    await Mac.all(async (err, mac) => {
-                                        if (!err){
-                                            await Object.keys(mac).forEach((key) => {
-                                                db
-                                                    .doc(mac[key].mac)
-                                                    .set({
-                                                        server : {
-                                                            localAddress : configuration.serverHost,
-                                                            localPort : configuration.serverPort,
-                                                            ngrok : {
-                                                                http : result.tunnels[1].public_url,
-                                                                https : result.tunnels[0].public_url
-                                                            }
-                                                        },
-                                                        device : {
-                                                            adapter : key,
-                                                            ipv4 : mac[key].ipv4,
-                                                            ipv6 : mac[key].ipv6,
-                                                            hostname : os.hostname(),
-                                                            arch : os.arch(),
-                                                            cpu : os.cpus(),
-                                                        }
-                                                    }, { merge : true });
+                                        await tunnels.then(async (result) => {
+                                            const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi '${configuration.serverName}' Server Dengan Alamat ${address}`, Ngrok : [ result.tunnels[1].public_url, result.tunnels[0].public_url]});
+                                            await Mac.all(async (err, mac) => {
+                                                if (!err){
+                                                    await Object.keys(mac).forEach((key) => {
+                                                        db
+                                                            .doc(mac[key].mac)
+                                                            .set({
+                                                                server : {
+                                                                    localAddress : configuration.serverHost,
+                                                                    localPort : configuration.serverPort,
+                                                                    ngrok : {
+                                                                        http : result.tunnels[1].public_url,
+                                                                        https : result.tunnels[0].public_url
+                                                                    }
+                                                                },
+                                                                device : {
+                                                                    adapter : key,
+                                                                    ipv4 : mac[key].ipv4,
+                                                                    ipv6 : mac[key].ipv6,
+                                                                    hostname : os.hostname(),
+                                                                    arch : os.arch(),
+                                                                    cpu : os.cpus(),
+                                                                }
+                                                            }, { merge : true });
+                                                    })
+
+
+                                                }
                                             })
-
-
-                                        }
-                                    })
-                                    await resolve(response);
-                                }).catch(async (error) => {
-                                    const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi '${configuration.serverName}' Server Dengan Alamat ${address}`, Ngrok : { error : error }});
-                                    await resolve(response);
-                                });
-                            } else if (configuration.settings.localtunnel) {
-                                const tunnel = await localtunnel({port: configuration.serverPort});
-                                const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi '${configuration.serverName}' Server Dengan Alamat ${address}`, Localtunnel : tunnel.url})
-                                await mProgressBar.increment( { state : Options.COMPLETE_STATE, descriptions : "Listening Service"});
-                                await delay(Options.DELAY_TIME);
-                                await resolve(response);
-                                await mProgressBar.stop()
-                            } else {
-                                const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi '${configuration.serverName}' Server Dengan Alamat ${address}`});
-                                await mProgressBar.increment( { state : Options.COMPLETE_STATE, descriptions : "Listening Service"});
-                                await delay(Options.DELAY_TIME);
-                                await resolve(response);
-                                await mProgressBar.stop();
-                            }
-                        } else {
-                            await rejected(JSON.stringify(err));
-                            await mProgressBar.stop();
+                                            await resolve(response);
+                                        }).catch(async (error) => {
+                                            const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi '${configuration.serverName}' Server Dengan Alamat ${address}`, Ngrok : { error : error }});
+                                            await resolve(response);
+                                        });
+                                    } else if (configuration.settings.localtunnel) {
+                                        const tunnel = await localtunnel({port: configuration.serverPort});
+                                        const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi '${configuration.serverName}' Server Dengan Alamat ${address}`, Localtunnel : tunnel.url})
+                                        await mProgressBar.increment( { state : Options.COMPLETE_STATE, descriptions : "Listening Service"});
+                                        await delay(Options.DELAY_TIME);
+                                        await resolve(response);
+                                        await mProgressBar.stop()
+                                    } else {
+                                        const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi '${configuration.serverName}' Server Dengan Alamat ${address}`});
+                                        await mProgressBar.increment( { state : Options.COMPLETE_STATE, descriptions : "Listening Service"});
+                                        await delay(Options.DELAY_TIME);
+                                        await resolve(response);
+                                        await mProgressBar.stop();
+                                    }
+                                } else {
+                                    await rejected(JSON.stringify(err));
+                                    await mProgressBar.stop();
+                                }
+                            })
+                        }else{
+                            rejected({ status : false, code : 500, msg : `Error Illegal Exception Framework`, error : err})
                         }
                     })
+
                 });
             case Options.REACTJS_CORE_ENGINE :
                 await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "start engine webpackDev"});
