@@ -1,5 +1,4 @@
 import _ from "lodash";
-import { Board, Led, Relay } from "johnny-five";
 import avrGirl from "avrgirl-arduino";
 
 class Arduino {
@@ -18,10 +17,10 @@ class Arduino {
 
         switch (this.config.engine) {
             case Arduino.ENGINE_JHONNYFIVE :
-                this.engineInstance = new Board();
+                //this.engineInstance = new Board();
                 break;
             default :
-                this.engineInstance = new Board();
+               // this.engineInstance = new Board();
                 break;
         }
     }

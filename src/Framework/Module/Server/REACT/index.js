@@ -89,7 +89,7 @@ export default (config) => new Promise((resolve, reject) => {
         };
         await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "starting webpackDevServer Engine"});
         await delay(Options.DELAY_TIME);
-        let webpackInstance = new WebpackDevServer(devServerOptions, compiler);
+        let webpackInstance = await new WebpackDevServer(devServerOptions, compiler);
         await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "started webpackDevServer Engine"});
         await delay(Options.DELAY_TIME);
         await resolve(webpackInstance)

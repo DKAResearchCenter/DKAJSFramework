@@ -112,8 +112,8 @@ const Config = {
         app : false,
         /** Setting System Settings **/
         settings : {
-            reactOpen : false,
-            reactHot : false,
+            reactOpen : true,
+            reactHot : true,
             reactCompress : true,
             firewall : [],
             /** Ngrok Tunneling **/

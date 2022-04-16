@@ -2,7 +2,6 @@
 'use strict';
 
 import _ from "lodash";
-import { Board, Led, Relay } from "johnny-five";
 
 class RaspberryPi {
 
@@ -17,10 +16,10 @@ class RaspberryPi {
 
         switch (this.config.engine) {
             case RaspberryPi.ENGINE_JHONNYFIVE :
-                this.engineInstance = new Board();
+                //this.engineInstance = new Board();
                 break;
             default :
-                this.engineInstance = new Board();
+                //this.engineInstance = new Board();
                 break;
         }
     }

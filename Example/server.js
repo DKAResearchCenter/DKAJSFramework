@@ -3,7 +3,14 @@ import { Database, Server } from "./../";
 const server = new Promise(async (resolve, rejected) => {
     await Server({
         serverPort : 1999,
-        app : false
+        app : async (app, opts, next) => {
+
+            app.get("/coba", function (request, response) {
+
+            });
+
+            next()
+        }
     }).then(async (result) => {
         //console.info(result)
         await resolve(result);

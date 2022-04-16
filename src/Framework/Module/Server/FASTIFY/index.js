@@ -3,7 +3,7 @@ import {existsSync} from "fs";
 import delay from "delay";
 import { io } from "socket.io-client";
 import Options from "./../../Options";
-import chalk from "chalk";
+
 import {App} from "react-bootstrap-icons";
 
 /** Melakukan Setting Export Default Untuk File JS Ini **/
@@ -90,7 +90,7 @@ export default async(config) => {
             }else{
                 await mProgressBar.increment( { state : Options.ERROR_STATE, descriptions : "view library"});
                 await delay(Options.DELAY_TIME);
-                console.info( chalk.red(` Pengaturan "options.layoutDir" Tidak Ditemukan. Harap Mendeklarasikan "options.layoutDir" Di Dalam Project "${ config.serverName}" Atau Membuat Folder "Layout" di Folder Project `));
+                console.info(` Pengaturan "options.layoutDir" Tidak Ditemukan. Harap Mendeklarasikan "options.layoutDir" Di Dalam Project "${ config.serverName}" Atau Membuat Folder "Layout" di Folder Project `);
             }
     }
     /** Mendaftarkan Module Tambahan Untuk Server Fastify **/
@@ -175,7 +175,7 @@ export default async(config) => {
             decorateReply: false
         });
     }else{
-        console.info(chalk.blue(`Folder "assetsDir" Tidak Ditemukan. Harap Mendeklarasikan "options.assetsDir" Di Dalam Project "${ config.serverName}" Atau Membuat Folder "Assets" di Folder Project`))
+        console.info(`Folder "assetsDir" Tidak Ditemukan. Harap Mendeklarasikan "options.assetsDir" Di Dalam Project "${ config.serverName}" Atau Membuat Folder "Assets" di Folder Project`);
     }
     await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Assets Dir Mounting"});
     await delay(Options.DELAY_TIME);
@@ -189,7 +189,7 @@ export default async(config) => {
             decorateReply: false
         });
     }else{
-        console.info(chalk.blue(` Folder "uploadDir" Tidak Ditemukan. Harap Mendeklarasikan "options.uploadDir" Di Dalam Project "${ config.serverName}" Atau Membuat Folder "Upload" di Folder Project`));
+        console.info(` Folder "uploadDir" Tidak Ditemukan. Harap Mendeklarasikan "options.uploadDir" Di Dalam Project "${ config.serverName}" Atau Membuat Folder "Upload" di Folder Project`);
     }
     await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Upload Dir Mounting"});
     await delay(Options.DELAY_TIME);

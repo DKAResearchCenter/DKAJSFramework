@@ -4,10 +4,10 @@ const db = new Promise(async (resolve, rejected) => {
     await new Database.MariaDB({
         engine : Options.MARIADB_POOL,
         host : "127.0.0.1",
-        user : "root",
-        password : "",
-        database : "test"
-    }).Read(`test_table`, { /** **/ })
+        user : "developer",
+        password : "Cyberhack2010",
+        database : "tes"
+    }).Read(`tes`)
         .then(async (rows) => {
             await resolve(rows);
         }).catch(async (exeception) => {

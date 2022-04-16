@@ -16,6 +16,10 @@ const Options = {
     FASTIFY_CORE_ENGINE : 3,
     RESTIFY_CORE_ENGINE : 4,
     REACTJS_CORE_ENGINE : 5,
+    PHP_CORE_ENGINE : 6,
+    PERL_CORE_ENGINE : 7,
+    ANGULAR_CORE_ENGINE : 8,
+    EXPO_CORE_ENGINE : 9,
 
     VIEW_POV_EJS : 1,
     VIEW_POV_MUSTACHE : 2,
@@ -46,7 +50,7 @@ const Options = {
     ERROR_STATE : `${ansiColors.red('Error')}`,
     WARNING_STATE : `${ansiColors.bgYellow('Warning')}`,
 
-    DELAY_TIME : 100,
+    DELAY_TIME : 10,
 
     RASPBERRYPI_CORE_CLI : "native",
     RASPBERRY_CORE_GPIO : "gpio",

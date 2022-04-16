@@ -9,8 +9,8 @@ import ftp from "./ftp";
 (async () => {
     const testPromise = Promise.all([
         /** server example from server.js class **/
-        /*server,*/
-        networking
+        server,
+        /*networking*/
         /** database example from database.js class **/
         /*vpn,*/
         /*ftp,*/
