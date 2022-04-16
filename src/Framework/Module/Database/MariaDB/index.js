@@ -11,7 +11,7 @@ import emojic from "node-emoji";
 import {existsSync, mkdirSync} from "fs";
 import {error} from "winston";
 /**
- * Functions Fot Class Mysql Database In Framework
+ * Functions Fot Class Mysql Connector In Framework
  * All Right Reserved
  * **/
 
@@ -20,7 +20,7 @@ import {error} from "winston";
 /**
  * @description Ini Adalah Module Library Yang Berisi Konfigurasi Server Untuk Membangun Sebuah Arsitektur Webserver
  * @example
- *     new DKA.Database.MariaDB(options)
+ *     new DKA.Connector.MariaDB(options)
  *     .rawQuery()
  * @see https://facebook.com/dhykavangga
  * @description Class Ini Berisi Tentang Membangun Sebuah Fungsi Web Server Di Dalam DKA Framework
@@ -430,7 +430,7 @@ class MariaDB {
                         resolve({
                             status : true,
                             code : 200,
-                            msg : "File Backup is Exist. Skip Save Database"
+                            msg : "File Backup is Exist. Skip Save Connector"
                         })
                     }
                 }catch (e) {

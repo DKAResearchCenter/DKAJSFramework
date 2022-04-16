@@ -5,7 +5,7 @@ import {Server as ServerConfig} from "../../Config";
 import _ from "lodash";
 
 /**
- * Functions Fot Class Mysql Database In Framework
+ * Functions Fot Class Mysql Connector In Framework
  * All Right Reserved
  * **/
 class MySQL {
