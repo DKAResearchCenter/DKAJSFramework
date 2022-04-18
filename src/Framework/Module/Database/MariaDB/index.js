@@ -5,7 +5,7 @@ import {join} from "path";
 import mysqldump from 'mysqldump';
 import _ from "lodash";
 import moment from "moment";
-import cliProgress from "cli-progress";
+import bigIntJson from "json-bigint";
 import ansiColors from "ansi-colors";
 import emojic from "node-emoji";
 import {existsSync, mkdirSync} from "fs";

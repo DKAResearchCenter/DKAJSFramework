@@ -1,32 +1,45 @@
 import path from "path";
-import fs from "fs";
+import fs, {existsSync} from "fs";
 import _ from "lodash";
 import Options from "./../../Options";
 
-import jsdom from "jsdom";
 import Webpack from "webpack";
-import wpCli from "webpack-cli";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import WebpackDevServer from "webpack-dev-server";
-import CopyWebpackPlugin from "copy-webpack-plugin";
 import delay from "delay";
 
-export default (config) => new Promise((resolve, reject) => {
+/**
+ *
+ * @param config
+ * @returns {Promise<unknown>}
+ */
+export default (config) => new Promise(async (resolve, reject) => {
     //"development" | "production" | "none"
     let serverState = (config.serverState === Options.SERVER_STATE_DEVELOPMENT) ? "development" :
         (config.serverState === Options.SERVER_STATE_PRODUCTION) ? "production" : "none";
 
-    mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "merged setting for react webpack"});
-    delay(Options.DELAY_TIME);
+    await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "merged setting for react webpack"});
+    await delay(Options.DELAY_TIME);
     /** Merger Configuration Data Merger Object
      * @param {Number} configuration
-     *
      * **/
-    let configuration = _.merge( {
+    let mEntryPath = (config.app.entry !== undefined) ? config.app.entry : path.join(require.main.filename, './../app.js')
+    /** Check Entry Path Exists Path **/
+    if (!existsSync(mEntryPath)){
+        await mProgressBar.increment( { state : Options.ERROR_STATE, descriptions : `entry path in ${mEntryPath} not found !. Please add options { entry : ... } `});
+        await reject({ status : false, code : 500, msg : `entry path in ${mEntryPath} not found !. Please add options { entry : ... } `});
+
+    }
+
+    /**
+     *
+     * @type {{mode: (string), output: {path: string, filename: string}, devServer: {writeToDisk: boolean, contentBase: string}, entry: (*|string), plugins: HtmlWebpackPlugin[]} & {mode: string, resolve: {extensions: string[]}, module: {rules: [{test: RegExp, use: {loader: string, options: {presets: string[], plugins: string[]}}, exclude: RegExp},{test: RegExp, use: string[]},{test: RegExp, use: [{loader: string},{loader: string}]}]}, target: string}}
+     */
+    let configuration = await _.merge( {
         /** Server State Mode Server Less Object Settings **/
         mode: serverState,
         /** Entry Point Path File Loader Builder Native App.js Location Default**/
-        entry : path.join(require.main.filename, './../app.js'),
+        entry : mEntryPath,
         /** Output Data Engine The Path And JS Output Path **/
         output: {
             /** path Destination After Compile **/
@@ -46,8 +59,8 @@ export default (config) => new Promise((resolve, reject) => {
         ]
     }, config.Webpack);
 
-    mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "merged setting for react webpack"});
-    delay(Options.DELAY_TIME);
+    await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "merged setting for react webpack"});
+    await delay(Options.DELAY_TIME);
     /** Checing Sserver Starts Data Start Development **/
     if (config.serverState === Options.SERVER_STATE_DEVELOPMENT){
         console.log(`entry config ${configuration.entry}`);

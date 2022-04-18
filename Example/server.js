@@ -5,8 +5,19 @@ const server = new Promise(async (resolve, rejected) => {
         serverPort : 1999,
         app : async (app, opts, next) => {
 
-            app.get("/coba", function (request, response) {
-
+            app.get("/", function (request, response) {
+                    new Database.MariaDB({
+                        host : '127.0.0.1',
+                        user : 'developer',
+                        password : 'Cyberhack2010',
+                        database : 'tes'
+                    }).Read(`tes`)
+                        .then(async (resolve) => {
+                            response.send(resolve);
+                        })
+                        .catch(async (resolve) => {
+                            response.send(resolve);
+                        })
             });
 
             next()

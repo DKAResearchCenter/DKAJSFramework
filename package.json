@@ -1,6 +1,6 @@
 {
   "name": "dkaframework",
-  "version": "1.0.319",
+  "version": "1.0.320",
   "description": "DKA Framework Multi Function",
   "main": "dist/Framework/Module/index.module.d.js",
   "author": "Yovangga Anandhika",
@@ -31,7 +31,7 @@
     "dev-server": "nodemon --watch Example --exec babel-node ./Example/index.js",
     "dev": "yarn run compile && nodemon --watch Example --exec babel-node ./Example/index.js",
     "compile-ts": "npx tsc",
-    "electron" : "",
+    "electron": "",
     "yarn-audit": "yarn-audit-fix",
     "install": "node-gyp rebuild"
   },
@@ -147,6 +147,7 @@
     "jose": "^4.6.1",
     "jquery": "^3.6.0",
     "jquery.redirect": "^1.1.4",
+    "json-bigint": "^1.0.0",
     "localtunnel": "^2.0.1",
     "lodash": "^4.17.21",
     "macaddress": "^0.5.2",

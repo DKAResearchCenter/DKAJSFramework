@@ -56,6 +56,7 @@ const Config = {
             database : "test",
             compress : false,
             port : 3306,
+            bigIntAsNumber : true,
             connectionLimit : 2,
             timezone : '+08:00',
             autoBackup : false,
