@@ -1,4 +1,3 @@
-import mMikrotik from "mikronode";
 import _ from "lodash";
 
 class Mikrotik {

@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { createRxDatabase, addRxPlugin } from "rxdb";
+import {createRxDatabase} from "rxdb";
 
 class RxDB {
 

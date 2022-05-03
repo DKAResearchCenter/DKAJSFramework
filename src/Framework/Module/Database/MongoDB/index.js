@@ -2,7 +2,7 @@
 'use warning';
 
 import _ from "lodash";
-import {MongoClient, Db} from "mongodb"
+import {MongoClient} from "mongodb"
 
 class MongoDB {
 

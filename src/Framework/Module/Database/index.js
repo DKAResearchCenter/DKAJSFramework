@@ -7,7 +7,6 @@ import MariaDB from "./MariaDB";
 import MongoDB from "./MongoDB";
 import Oracle from "./Oracle";
 import NeDB from "./NEDB";
-import POSTGRES from "./POSTGRES";
 import Google from "./Google";
 
 /**

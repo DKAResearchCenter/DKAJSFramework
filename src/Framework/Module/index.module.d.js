@@ -10,7 +10,6 @@
  * All Right Reserved.
  * */
 import _ from "lodash";
-import tensor from "@tensorflow/tfjs-core";
 
 import Functions from "./Functions";
 import Helper from "./Helper";

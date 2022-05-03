@@ -1,10 +1,9 @@
 import DKA from "../../index.module.d.js";
 import {existsSync} from "fs";
+import isElectron from "is-electron";
+import electronLog from "electron-log";
 import delay from "delay";
-import { io } from "socket.io-client";
 import Options from "./../../Options";
-
-import {App} from "react-bootstrap-icons";
 
 /** Melakukan Setting Export Default Untuk File JS Ini **/
 export default async(config) => {
@@ -19,6 +18,7 @@ export default async(config) => {
         const mSetting = {
             logger : { level: 'warn'},
             connectionTimeout : 180000,
+            pluginTimeout : 20000,
             trustProxy: true
         };
 
@@ -29,10 +29,12 @@ export default async(config) => {
         if (config.secure !== false){
             mSetting.https = config.secure;
         }
-        await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "require [Fastify] core engine Development"});
+        await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "require [Fastify] core engine Development"}) :
+            mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "require [Fastify] core engine Development"});
         await delay(Options.DELAY_TIME);
         AppEngine = await require("fastify")(mSetting);
-        await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "require [Fastify] core engine Development"});
+        await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "require [Fastify] core engine Development"}) :
+            mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "require [Fastify] core engine Development"});
         await delay(Options.DELAY_TIME);
         /** Melakukan Resolve Chain Promise **/
 
@@ -52,10 +54,12 @@ export default async(config) => {
             mSetting.https = config.secure;
         }
 
-        await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "require [Fastify] core engine Production"});
+        await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "require [Fastify] core engine Production"}) :
+            mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "require [Fastify] core engine Production"});
         await delay(Options.DELAY_TIME);
         AppEngine = await require("fastify")(mSetting);
-        await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "require [Fastify] core engine Production"});
+        await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "require [Fastify] core engine Production"}) :
+            mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "require [Fastify] core engine Production"});
         await delay(Options.DELAY_TIME);
         /** Melakukan Resolve Chain Promise **/
     }
@@ -64,18 +68,21 @@ export default async(config) => {
      * Jika True, Maka Server Menampilkan Log System, Jika Tidak Mematikan Mode Logger
      *
      */
-    await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "socket.io library"});
+    await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "socket.io library"}) :
+        mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "socket.io library"});
     await delay(Options.DELAY_TIME);
     /** Menambahkan Dekorasi Ke App Engin e Socket IO **/
     await AppEngine.register(require('fastify-socket.io'), config.library.socketIo);
     /** Mengembalikan Fungsi App Engine **/
-    await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "socket.io library"});
+    await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "socket.io library"}) :
+        mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "socket.io library"});
     await delay(Options.DELAY_TIME);
     /** Mendaftarkan Module Tambahan Untuk Server Fastify **/
     switch (config.serverView){
         default :
             if (existsSync(config.options.layoutDir)){
-                await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "view library"});
+                await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "view library"}) :
+                    mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "view library"});
                 await delay(Options.DELAY_TIME);
                 await AppEngine.register(require('point-of-view'), {
                     engine : {
@@ -85,114 +92,204 @@ export default async(config) => {
                     /*viewExt: 'html'*/
                     includeViewExtension: true
                 });
-                await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "view library"});
+                await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "view library"}) :
+                    mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "view library"});
                 await delay(Options.DELAY_TIME);
             }else{
-                await mProgressBar.increment( { state : Options.ERROR_STATE, descriptions : "view library"});
+                await (isElectron()) ? electronLog.info({ state : Options.ERROR_STATE, descriptions : "view library"}) :
+                    mProgressBar.increment( { state : Options.ERROR_STATE, descriptions : "view library"});
                 await delay(Options.DELAY_TIME);
                 console.info(` Pengaturan "options.layoutDir" Tidak Ditemukan. Harap Mendeklarasikan "options.layoutDir" Di Dalam Project "${ config.serverName}" Atau Membuat Folder "Layout" di Folder Project `);
             }
     }
     /** Mendaftarkan Module Tambahan Untuk Server Fastify **/
-    await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "cors library"});
+    await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "cors library"}) :
+        mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "cors library"});
     await delay(Options.DELAY_TIME);
-    await AppEngine.register(require("fastify-cors"));
-    await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "cors library"});
+    await AppEngine.register(require("@fastify/cors"), config.library.fastifyCors);
+    await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "cors library"}) :
+        mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "cors library"});
     await delay(Options.DELAY_TIME);
 
-    await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "rate limit library"});
+    await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "rate limit library"}) :
+        mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "rate limit library"});
     await delay(Options.DELAY_TIME);
-    await AppEngine.register(require("fastify-rate-limit"), {
+    await AppEngine.register(require("@fastify/rate-limit"), {
         global : true,
         max: 1000,
         timeWindow: '1 minute'
     });
-    await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "rate limit library"});
+    await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "rate limit library"}) :
+        mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "rate limit library"});
     await delay(Options.DELAY_TIME);
 
-    await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Multipart format library"});
+    await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "Multipart format library"}) :
+        mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Multipart format library"});
     await delay(Options.DELAY_TIME);
-    await AppEngine.register(require('fastify-multipart'), { attachFieldsToBody: true });
-    await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Multipart format library"});
+    await AppEngine.register(require('@fastify/multipart'), { attachFieldsToBody: true });
+    await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "Multipart format library"}) :
+        mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Multipart format library"});
     await delay(Options.DELAY_TIME);
 
-    await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Cookie library"});
+    await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "Cookie library"}) :
+        mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Cookie library"});
     await delay(Options.DELAY_TIME);
     const appCookie = require('fastify-cookie');
     await AppEngine.register(appCookie, {
         secret: config.settings.secretKey,
         path : "/"
     });
-    await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Cookie library"});
+    await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "Cookie library"}) :
+        mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Cookie library"});
     await delay(Options.DELAY_TIME);
 
     if (config.plugin.FastifyCompress.enabled){
-        await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Compressing library"});
+        await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "Compressing library"}) :
+            mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Compressing library"});
         await delay(Options.DELAY_TIME);
-        await AppEngine.register(require('fastify-compress'), config.plugin.FastifyCompress.options);
-        await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Compressing library"});
-        await delay(Options.DELAY_TIME);
+        if (existsSync(require('fastify-compress'))){
+            await AppEngine.register(require('fastify-compress'), config.plugin.FastifyCompress.options);
+            await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "Compressing library"}) :
+                mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Compressing library"});
+            await delay(Options.DELAY_TIME);
+        }else{
+            await (isElectron()) ? electronLog.info({ state : Options.ERROR_STATE, descriptions : "Compressing library Not Found"}) :
+                mProgressBar.increment( { state : Options.ERROR_STATE, descriptions : "Compressing library Not Found"});
+            await delay(Options.DELAY_TIME);
+        }
+
     }
     if (config.plugin.FastifyHelmet.enabled){
-        await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Helmet library"});
+        await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "Helmet library"}) :
+            mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Helmet library"});
         await delay(Options.DELAY_TIME);
-        await AppEngine.register(require('fastify-helmet'), config.plugin.FastifyHelmet.options);
-        await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Helmet library"});
-        await delay(Options.DELAY_TIME);
+        if (existsSync(require("@fastify/helmet"))){
+            await AppEngine.register(require('@fastify/helmet'), config.plugin.FastifyHelmet.options);
+            await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "Helmet library"}) :
+                mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Helmet library"});
+            await delay(Options.DELAY_TIME);
+        }else{
+            await (isElectron()) ? electronLog.info({ state : Options.ERROR_STATE, descriptions : "Helmet library Not Found"}) :
+                mProgressBar.increment( { state : Options.ERROR_STATE, descriptions : "Helmet library Not Found"});
+            await delay(Options.DELAY_TIME);
+        }
+
     }
     if (config.plugin.FastifyLog.enabled){
-        await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Logging library"});
+        await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "Logging library"}) :
+            mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Logging library"});
         await delay(Options.DELAY_TIME);
-        await AppEngine.register(require('fastify-log'), config.plugin.FastifyLog.options);
-        await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Compressing library"});
-        await delay(Options.DELAY_TIME);
+        if (existsSync(require('fastify-log'))){
+            await AppEngine.register(require('fastify-log'), config.plugin.FastifyLog.options);
+            await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "Logging library"}) :
+                mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Logging library"});
+            await delay(Options.DELAY_TIME);
+        }else{
+            await (isElectron()) ? electronLog.info({ state : Options.ERROR_STATE, descriptions : "Logging library Not Found"}) :
+                mProgressBar.increment( { state : Options.ERROR_STATE, descriptions : "Logging library Not Found"});
+            await delay(Options.DELAY_TIME);
+        }
     }
-    if (config.plugin.FastifyGracefulShutdown){
-        await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Shutdown library"});
+    if (config.plugin.FastifyGracefulShutdown.enabled){
+        await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "Shutdown library"}) :
+            mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Shutdown library"});
         await delay(Options.DELAY_TIME);
-        await AppEngine.register(require('fastify-graceful-shutdown'));
-        await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Shutdown library"});
-        await delay(Options.DELAY_TIME);
+
+        if (existsSync(require('fastify-graceful-shutdown'))){
+            await AppEngine.register(require('fastify-graceful-shutdown'));
+            await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "Shutdown library"}) :
+                mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Shutdown library"});
+            await delay(Options.DELAY_TIME);
+        }else{
+            await (isElectron()) ? electronLog.info({ state : Options.ERROR_STATE, descriptions : "Shutdown library Module Not Found"}) :
+                mProgressBar.increment( { state : Options.ERROR_STATE, descriptions : "Shutdown library Module Not Found"});
+            await delay(Options.DELAY_TIME);
+        }
+
     }
+    if (config.plugin.FastifyJwt.enabled){
+        await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "JWT Tokens library"}) :
+            mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "JWT Tokens library"});
+        await delay(Options.DELAY_TIME);
+        if (existsSync(require("@fastify/jwt"))){
+            await AppEngine.register(require("@fastify/jwt"), { secret : DKA.config.SecretConfig.EncryptSecret });
+            await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "JWT Tokens library"}) :
+                mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "JWT Tokens library"});
+            await delay(Options.DELAY_TIME);
+        }else{
+            await (isElectron()) ? electronLog.info({ state : Options.ERROR_STATE, descriptions : "JWT Tokens library Not Found"}) :
+                mProgressBar.increment( { state : Options.ERROR_STATE, descriptions : "JWT Tokens library Not Found"});
+            await delay(Options.DELAY_TIME);
+        }
+    }
+    if (config.plugin.FastifyFormBody.enabled){
+        await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "Form Body library"}) :
+            mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Form Body library"});
+        await delay(Options.DELAY_TIME);
 
-    await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "JWT Tokens library"});
-    await delay(Options.DELAY_TIME);
-    await AppEngine.register(require("fastify-jwt"), { secret : DKA.config.SecretConfig.EncryptSecret });
-    await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "JWT Tokens library"});
-    await delay(Options.DELAY_TIME);
+        if (existsSync(require("@fastify/formbody"))){
+            await AppEngine.register(require("@fastify/formbody"));
+            await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "Form Body library"}) :
+                mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Form Body library"});
+            await delay(Options.DELAY_TIME);
+        }else{
+            await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "Form Body library Not Found"}) :
+                mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Form Body library Not Found"});
+            await delay(Options.DELAY_TIME);
+        }
 
-    await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Form Body library"});
-    await delay(Options.DELAY_TIME);
-    await AppEngine.register(require("fastify-formbody"));
-    await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Form Body library"});
-    await delay(Options.DELAY_TIME);
-
-    await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Assets Dir Mounting"});
-    await delay(Options.DELAY_TIME);
+    }
     if (existsSync(config.options.assetsDir)){
-        await AppEngine.register(require("fastify-static"), {
-            root : config.options.assetsDir,
-            decorateReply: false
-        });
-    }else{
-        console.info(`Folder "assetsDir" Tidak Ditemukan. Harap Mendeklarasikan "options.assetsDir" Di Dalam Project "${ config.serverName}" Atau Membuat Folder "Assets" di Folder Project`);
-    }
-    await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Assets Dir Mounting"});
-    await delay(Options.DELAY_TIME);
+        await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "Assets Dir Mounting"}) :
+            mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Assets Dir Mounting"});
+        await delay(Options.DELAY_TIME);
 
-    await mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Upload Dir Mounting"});
-    await delay(Options.DELAY_TIME);
-    if (existsSync(config.options.uploadDir)){
-        await AppEngine.register(require("fastify-static"), {
-            root : config.options.uploadDir,
-            prefix: '/upload/',
-            decorateReply: false
-        });
+        if (existsSync(require("@fastify/static"))){
+            await AppEngine.register(require("@fastify/static"), {
+                root : config.options.assetsDir,
+                decorateReply: false
+            });
+            await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "Assets Dir Mounting"}) :
+                mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Assets Dir Mounting"});
+            await delay(Options.DELAY_TIME);
+        }else{
+            await (isElectron()) ? electronLog.info({ state : Options.ERROR_STATE, descriptions : "Assets Dir Mounting Not Found"}) :
+                mProgressBar.increment( { state : Options.ERROR_STATE, descriptions : "Assets Dir Mounting Not Found"});
+            await delay(Options.DELAY_TIME);
+        }
     }else{
-        console.info(` Folder "uploadDir" Tidak Ditemukan. Harap Mendeklarasikan "options.uploadDir" Di Dalam Project "${ config.serverName}" Atau Membuat Folder "Upload" di Folder Project`);
+        await (isElectron()) ? electronLog.info({ state : Options.WARNING_STATE, descriptions : "Assets Dir Mounting"}) :
+            mProgressBar.increment( { state : Options.WARNING_STATE, descriptions : "Assets Dir Mounting"});
+        await delay(Options.DELAY_TIME);
     }
-    await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Upload Dir Mounting"});
-    await delay(Options.DELAY_TIME);
+
+
+    if (existsSync(config.options.uploadDir)){
+
+        await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "Upload Dir Mounting"}) :
+            mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Upload Dir Mounting"});
+        await delay(Options.DELAY_TIME);
+
+        if (existsSync(require("@fastify/static"))){
+            await AppEngine.register(require("@fastify/static"), {
+                root : config.options.uploadDir,
+                prefix: '/upload/',
+                decorateReply: false
+            });
+            await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "Upload Dir Mounting"}) :
+                mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "Upload Dir Mounting"});
+            await delay(Options.DELAY_TIME);
+        }else{
+            await (isElectron()) ? electronLog.info({ state : Options.ERROR_STATE, descriptions : "Upload Dir Mounting Not Found"}) :
+                mProgressBar.increment( { state : Options.ERROR_STATE, descriptions : "Upload Dir Mounting Not Found"});
+            await delay(Options.DELAY_TIME);
+        }
+
+    }else{
+        await (isElectron()) ? electronLog.info({ state : Options.WARNING_STATE, descriptions : "Upload Dir Mounting"}) :
+            mProgressBar.increment( { state : Options.WARNING_STATE, descriptions : "Upload Dir Mounting"});
+        await delay(Options.DELAY_TIME);
+    }
 
     return AppEngine;
 };

@@ -1,9 +1,8 @@
 'use strict';
 'use warning';
-import {createWriteStream, existsSync, writeFileSync} from "fs";
+import {existsSync, writeFileSync} from "fs";
 import _ from "lodash";
 import {Server} from "./../../index.module.d"
-import pump from "pump";
 
 /**
  *

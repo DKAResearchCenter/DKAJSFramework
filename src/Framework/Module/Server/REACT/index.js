@@ -28,7 +28,6 @@ export default (config) => new Promise(async (resolve, reject) => {
     if (!existsSync(mEntryPath)){
         await mProgressBar.increment( { state : Options.ERROR_STATE, descriptions : `entry path in ${mEntryPath} not found !. Please add options { entry : ... } `});
         await reject({ status : false, code : 500, msg : `entry path in ${mEntryPath} not found !. Please add options { entry : ... } `});
-
     }
 
     /**

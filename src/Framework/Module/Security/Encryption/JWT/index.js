@@ -1,7 +1,7 @@
 import JWT from "jsonwebtoken";
 import fs from "fs";
 import path from "path";
-import DKA, {Options, Security, Functions} from "./../../../index.module.d"
+import {Security} from "./../../../index.module.d"
 
 import _ from "lodash";
 

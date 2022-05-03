@@ -2,8 +2,6 @@
 'use warning';
 import _ from "lodash";
 import * as admin from "firebase-admin";
-import {apps} from "firebase-admin"
-import mDatabase from "./Database";
 
 class Admin {
 

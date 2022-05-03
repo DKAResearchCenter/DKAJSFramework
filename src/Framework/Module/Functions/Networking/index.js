@@ -1,4 +1,3 @@
-
 import IP from "./IP";
 
 const Networking = {

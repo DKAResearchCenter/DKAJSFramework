@@ -2,7 +2,6 @@ import _ from "lodash";
 import path from "path";
 import fs from "fs";
 import ftp from "ftp";
-import ftpClient from "ftp-client";
 
 class FTP {
 

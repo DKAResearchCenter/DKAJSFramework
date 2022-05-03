@@ -1,28 +1,11 @@
-import packages from "../../../../../package.json";
-
-
-
 const errorHandler = async (app, config) => {
 
     const path = require("path");
     const fs = require("fs");
-    const io = app.io;
 
     /** Function If Not Found Handler Data **/
     await app.setNotFoundHandler(async (request, response) => {
-        const mHeader = {
-            FrameworkName: packages.name,
-            FrameworkVersion: packages.version,
-            FrameworkAuthor: packages.author
-        };
-        await Object.keys(mHeader).forEach(function (keys) {
-            response.header(keys, mHeader[keys]);
-        });
-        await Object.keys(mHeader).forEach(function (keys) {
-            request.headers[keys] = mHeader[keys];
-        });
-
-        const html = await fs.readFileSync(path.join(__dirname, "./notFound.html"), {encoding: 'utf8', flag: 'r'});
+        const html = fs.readFileSync(path.join(__dirname, "./notFound.html"), {encoding: 'utf8', flag: 'r'});
         switch (request.method){
             case "GET" :
                 await response

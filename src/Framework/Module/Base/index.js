@@ -1,11 +1,11 @@
 import moment from "moment";
-import { Security, Database } from "./../index.module.d";
+import {Database, Security} from "./../index.module.d";
 import dns from "dns"
 import path from "path";
 import mac from "macaddress";
 import os from "os";
 import ip from "ip";
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import {existsSync, readFileSync, writeFileSync} from "fs";
 import fsExtra from "fs-extra";
 import dotEnv from "dotenv";
 

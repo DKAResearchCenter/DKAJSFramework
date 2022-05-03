@@ -1,8 +1,6 @@
 import _ from "lodash";
-import path from "path";
 import mftp from "ftp";
 import fs from "fs";
-import {Base64Encode} from "base64-stream"
 
 class ftp {
 

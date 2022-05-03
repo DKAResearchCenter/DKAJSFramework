@@ -1,10 +1,4 @@
 import axios from "axios";
-import $ from "jquery";
-import hmac256 from "crypto-js/hmac-sha256";
-import CryptoJS from "crypto-js";
-import Crypto from "crypto";
-import moment from "moment";
-import qs from "qs";
 import _ from "lodash";
 
 class SiCepat {

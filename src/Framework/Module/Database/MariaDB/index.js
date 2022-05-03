@@ -1,15 +1,14 @@
 'use strict';
 'use warning';
-import DKA, {Server, Config, Security, Options, Functions} from "./../../index.module.d.js";
+import DKA, {Config, Options, Security, Server} from "./../../index.module.d.js";
 import {join} from "path";
 import mysqldump from 'mysqldump';
 import _ from "lodash";
 import moment from "moment";
-import bigIntJson from "json-bigint";
 import ansiColors from "ansi-colors";
 import emojic from "node-emoji";
-import {existsSync, mkdirSync} from "fs";
-import {error} from "winston";
+import {existsSync} from "fs";
+
 /**
  * Functions Fot Class Mysql Connector In Framework
  * All Right Reserved
@@ -141,12 +140,9 @@ class MariaDB {
         this.options = _.merge(DKA.config.Database.MariaDB, options );
         DKA.config.Database.MariaDB = this.options;
         /** **
-         *
          * */
         const MariaDBEngine = require("mariadb");
         moment.locale("id");
-
-
 
         switch (this.options.encryption.engine){
             case Options.ENCRYPTION_ENGINE_CRYPTO :
@@ -220,7 +216,7 @@ class MariaDB {
     Create = async (TableName, Rules) => {
         this.#method = MariaDB.MARIADB_METHOD_CREATE;
         let Rule = _.extend({
-            data: false,
+            data : false,
         }, Rules)
 
         /** Load Encryption**/
@@ -240,10 +236,7 @@ class MariaDB {
             });
 
 
-
             let SqlScript = `INSERT INTO \`${mTableName}\` (${this.mKey}) VALUES (${this.mVal}) `;
-
-
             this.#returnedResult = await this.rawQuerySync(SqlScript, []);
         } else {
             let mVal = [];
@@ -283,7 +276,7 @@ class MariaDB {
         this.#method = MariaDB.MARIADB_METHOD_READ;
         /** lodash Extend JSON COnfig **/
         const Rule = await _.extend({
-            as: false,
+            as : false,
             column : [],
             orderBy : {
                 column : [],
@@ -303,7 +296,11 @@ class MariaDB {
 
         if (!TypeData) {
             await Object.keys(Rule.search).forEach( (item) => {
-                this.mSearchAdd += `\'${(this.options.encryption.enabled) ? this.EncryptionModule.encodeIvSync(item).toString() : item}\' = \'${(this.options.encryption.enabled) ? this.EncryptionModule.encodeIvSync(Rule.search[item]) : Rule.search[item]}\' `;
+                this.mSearchAdd += `\'${(this.options.encryption.enabled) ? 
+                    this.EncryptionModule.encodeIvSync(item).toString() : 
+                    item}\' = \'${(this.options.encryption.enabled) ? 
+                    this.EncryptionModule.encodeIvSync(Rule.search[item]) 
+                    : Rule.search[item]}\' `;
             });
         }else{
             await Rule.search.forEach((item) => {
@@ -385,7 +382,7 @@ class MariaDB {
         this.#method = MariaDB.MARIADB_METHOD_DELETE;
         const Rule = _.extend({
             search: false
-        }, Rules)
+        }, Rules);
 
         this.mWhere = [];
 

@@ -1,10 +1,14 @@
 'use strict';
 'use warning';
-import {Security} from "./../index.module.d";
 import Options from "./../Options";
-import crypto from "crypto";
 import path from "path";
+import fs from "fs";
 
+/**
+ *
+ * @type {
+ *  { SecretConfig : { SignSecret: string, EncryptSecret: string}, Networking: {DHCP: {broadcast: string, router: string, static: [{hostname: string, mac_address: string, ip_address: string}], netmask: string, dns: string[], range: string[], on_commit: string, interface: string, network: string}}, Server: {app: boolean, settings: {localtunnel: boolean, reactCompress: boolean, reactHot: boolean, secretKey: string, firewall: *[], ngrok: {authToken: null, enabled: boolean}, reactOpen: boolean}, serverView: number, serverEngine: number, serverName, serverPort: number, secure: boolean, serverHost: string, serverEnabled: boolean, serverState: string, library: {socketIo: {httpCompression: {chunkSize: number, threshold: number, memLevel: number, windowBits: number}, cors: {origin: string}, perMessageDeflate: {serverNoContextTakeover: boolean, zlibDeflateOptions: {chunkSize: number}, clientNoContextTakeover: boolean, threshold: number, concurrencyLimit: number, zlibInflateOptions: {memLevel: number, windowBits: number}, serverMaxWindowBits: number}}}, plugin: {FastifyGracefulShutdown: boolean, FastifyLog: {options: {}, enabled: boolean}, FastifyHelmet: {options: {contentSecurityPolicy: boolean}, enabled: boolean}, FastifyCompress: {options: {global: boolean}, enabled: boolean}}, options: {layoutDir: string, distDir: string, backupDir: string, autoloadDir: string, uploadDir: string, appDir: string, srcDir: string, assetsDir: string, publicDir: string}, serverDomain: boolean, http2: boolean, Webpack: {mode: string, resolve: {extensions: string[]}, module: {rules: [{test: RegExp, use: {loader: string, options: {presets: string[], plugins: string[]}}, exclude: RegExp},{test: RegExp, use: string[]},{test: RegExp, use: [{loader: string},{loader: string}]}]}, target: string}}, Database: {NeDB: {inMemoryOnly: boolean, filename: string, timestampData: boolean, afterSerialization: (function(*): *), beforeDeserialization: (function(*): *), dbName: string, autoload: boolean}, MariaDB: {debug: boolean, compress: boolean, timezone: string, autoBackup: boolean, password: string, database: string, connectionLimit: number, encryption: {secretKey: string, engine: string, options: {data: boolean, column: boolean, table: boolean}, alg: string, enabled: boolean}, engine: number, port: number, bigIntAsNumber: boolean, host: string, lang: string, user: string}}, Hardware: {Printer: {Escpos: {settings: {usb: {productId: undefined, vendorId: undefined}, serial: {settings: undefined, port: string}, network: {port: number, ipAddress: string}}, options: {encoding: string}, type: number}}}, FirebaseConfig: {storageBucket: string, apiKey: string, messagingSenderId: string, appId: string, projectId: string, measurementId: string, databaseURL: string, authDomain: string}, Global: {keySecret: string}}}
+ */
 const Config = {
     /**
      * @param {Object} Global
@@ -54,9 +58,8 @@ const Config = {
             user : "root",
             password : "",
             database : "test",
-            compress : false,
+            compress : true,
             port : 3306,
-            bigIntAsNumber : true,
             connectionLimit : 2,
             timezone : '+08:00',
             autoBackup : false,
@@ -90,7 +93,7 @@ const Config = {
     },
     Server : {
         /** ServerName For Naming App Server **/
-        serverName : require(path.join(process.cwd(),'package.json')).name,
+        serverName : (fs.existsSync(path.join(process.cwd(), 'package.json'))) ? require(path.join(process.cwd(),'package.json')).name : null,
         /** Server Domain For Naming Service Domain Access **/
         serverDomain : false,
         /** Server State Overide Enable and Disabled **/
@@ -126,26 +129,47 @@ const Config = {
             secretKey : "Cyberhack2010Yovangga@nandhika2021"
         },
         library : {
+            fastifyCors : {
+                origin : '*'
+            },
             socketIo : {
                 /*rememberTransport: false,
                 transports: ['WebSocket', 'Flash Socket', 'AJAX long-polling'],
                 pingTimeout : 3000,
                 pingInterval : 1000,*/
+                perMessageDeflate : false,
                 cors: {
                     origin: '*',
                 }
             }
         },
         plugin : {
-            FastifyGracefulShutdown : true,
-            FastifyLog : {
-                enabled : true,
+            FastifyGracefulShutdown : {
+                enabled : false,
                 options : {}
             },
-            FastifyHelmet : {
+            FastifyLog : {
                 enabled : true,
                 options : {
+
+                }
+            },
+            FastifyFormBody : {
+                enabled : true,
+                options : {
+
+                }
+            },
+            FastifyHelmet : {
+                enabled : false,
+                options : {
                     contentSecurityPolicy: false
+                }
+            },
+            FastifyJwt : {
+                enabled : false,
+                options : {
+
                 }
             },
             FastifyCompress : {

@@ -1,4 +1,5 @@
 import MidTrans from "./MidTrans";
+
 const Fintech = {
     MidTrans : MidTrans
 };
