@@ -1,6 +1,6 @@
 'use warnings';
 'use strict';
-
+import Options from "./../../Options";
 import _ from "lodash";
 import gpio from "gpio";
 import mDelay from "delay";
@@ -51,12 +51,16 @@ class RaspberryPi {
     export = async (pin, settings) => await new Promise(async (resolve, rejected) => {
         if (isPi.sync()){
             this.settingsExport = await _.extend({
-                direction : gpio.DIRECTION.IN,
+                direction : Options.GPIO_DIR_OUT,
                 interval : 200
             }, settings);
             switch (this.config.engine){
                 case RaspberryPi.ENGINE_GPIO_LIBRARY :
-                    this.mPortArray[pin] = this.engineInstance.export(`${pin}`, this.settingsExport);
+                    this.mPortArray[pin] = {
+                        instance : this.engineInstance.export(`${pin}`, this.settingsExport),
+                        direction : this.settingsExport.direction,
+                        interval : this.settingsExport.interval
+                    };
                     await resolve({ status : true, code : 500, msg : `Successfully Export Port Raspberry Pi`, instance : this.engineInstance.export(`${pin}`, this.settingsExport)});
                     break;
                 default :
@@ -79,22 +83,26 @@ class RaspberryPi {
             switch (this.config.engine) {
                 case RaspberryPi.ENGINE_GPIO_LIBRARY :
                     await Object(this.mPortArray).map( async (key) => {
-                        if (key.isEqual(pin)){
-                            if (this.config.defaultLower === false){
-                                (state) ? this.mPortArray[key].set(async () => {
-                                    await resolve({ status : true, code : 200, msg : `state IO is High Successfully Set`});
-                                }) : this.mPortArray[key].set(0, async () => {
-                                    await resolve({ status : true, code : 200, msg : `state IO is Low Successfully Set`});
-                                });
+                        if (key.direction === Options.GPIO_DIR_OUT){
+                            if (key.isEqual(pin)){
+                                if (this.config.defaultLower === false){
+                                    (state) ? this.mPortArray[key].instance.set(async () => {
+                                        await resolve({ status : true, code : 200, msg : `state IO is High Successfully Set`});
+                                    }) : this.mPortArray[key].instance.set(0, async () => {
+                                        await resolve({ status : true, code : 200, msg : `state IO is Low Successfully Set`});
+                                    });
+                                }else{
+                                    (state) ? this.mPortArray[key].instance.set(0, async () => {
+                                        await resolve({ status : true, code : 200, msg : `state IO is Low Successfully Set`});
+                                    }) : this.mPortArray[key].instance.set(async () => {
+                                        await resolve({ status : true, code : 200, msg : `state IO is High Successfully Set`});
+                                    });
+                                }
                             }else{
-                                (state) ? this.mPortArray[key].set(0, async () => {
-                                    await resolve({ status : true, code : 200, msg : `state IO is Low Successfully Set`});
-                                }) : this.mPortArray[key].set(async () => {
-                                    await resolve({ status : true, code : 200, msg : `state IO is High Successfully Set`});
-                                });
+                                await rejected({ status : false, code : 500, msg : `The Pin Not Export. please export First`});
                             }
                         }else{
-                            await rejected({ status : false, code : 500, msg : `The Pin Not Export. please export First`});
+                            await rejected({ status : false, code : 500, msg : `The Pin is Not Dir Out Mode. please Set Dir Out Mode`});
                         }
                     });
                     break;
@@ -118,24 +126,28 @@ class RaspberryPi {
             switch (this.config.engine) {
                 case RaspberryPi.ENGINE_GPIO_LIBRARY :
                     await Object(this.mPortArray).map( async (key) => {
-                        if (key.isEqual(pin)){
-                            if (this.config.defaultLower === false){
-                                this.mPortArray[key].set(async () => {
-                                    await mDelay(delay);
-                                    this.mPortArray[key].set(0, async () => {
-                                        await resolve({ status : true, code : 200, msg : `state IO is Low Successfully Set`});
+                        if (key.direction === Options.GPIO_DIR_OUT){
+                            if (key.isEqual(pin)){
+                                if (this.config.defaultLower === false){
+                                    this.mPortArray[key].instance.set(async () => {
+                                        await mDelay(delay);
+                                        this.mPortArray[key].instance.set(0, async () => {
+                                            await resolve({ status : true, code : 200, msg : `state IO is Low Successfully Set`});
+                                        });
                                     });
-                                });
+                                }else{
+                                    this.mPortArray[key].instance.set(0, async () => {
+                                        await mDelay(delay);
+                                        this.mPortArray[key].instance.set(async () => {
+                                            await resolve({ status : true, code : 200, msg : `state IO is Low Successfully Set`});
+                                        });
+                                    });
+                                }
                             }else{
-                                this.mPortArray[key].set(0, async () => {
-                                    await mDelay(delay);
-                                    this.mPortArray[key].set(async () => {
-                                        await resolve({ status : true, code : 200, msg : `state IO is Low Successfully Set`});
-                                    });
-                                });
+                                await rejected({ status : false, code : 500, msg : `The Pin Not Export. please export First`});
                             }
                         }else{
-                            await rejected({ status : false, code : 500, msg : `The Pin Not Export. please export First`});
+                            await rejected({ status : false, code : 500, msg : `The Pin is Not Dir Out Mode. please Set Dir Out Mode`});
                         }
                     });
                     break;
@@ -147,6 +159,45 @@ class RaspberryPi {
             await rejected({ status : false, code : 505, msg : `This Device Not Raspberry Pi`});
         }
 
+    });
+
+    /**************************************************
+     * @param {Number} pin
+     * @returns {Promise<Object>}
+     **************************************************/
+    reset = async (pin) =>  await new Promise(async (resolve, rejected) => {
+        if (isPi.sync()) {
+            switch (this.config.engine) {
+                case RaspberryPi.ENGINE_GPIO_LIBRARY :
+                    await Object(this.mPortArray).map( async (key) => {
+                        if (key.isEqual(pin)){
+                            if (this.config.defaultLower === false){
+                                if (this.mPortArray[key].direction === Options.GPIO_DIR_IN){
+                                    await this.mPortArray[key].instance.removeAllListeners('change');
+                                }
+                                await this.mPortArray[key].instance.reset();
+                               await this.mPortArray[key].instance.unexport(async () => {
+                                    await resolve({ status : true, code : 200, msg : `Successfully to Reset Port`});
+                                    delete this.mPortArray[key];
+                                });
+                            }else{
+                                if (this.mPortArray[key].direction === Options.GPIO_DIR_IN){
+                                    await this.mPortArray[key].instance.removeAllListeners('change');
+                                }
+                                this.mPortArray[key].instance.unexport(async () => {
+                                    await resolve({ status : true, code : 200, msg : `Successfully to Reset Port`});
+                                    delete this.mPortArray[key];
+                                });
+                            }
+                        }else{
+                            await rejected({ status : false, code : 505, msg : `Pin Not Export Or Detected`});
+                        }
+                    })
+                    break;
+            }
+        }else{
+            await rejected({ status : false, code : 505, msg : `This Device Not Raspberry Pi`});
+        }
     })
 
 
