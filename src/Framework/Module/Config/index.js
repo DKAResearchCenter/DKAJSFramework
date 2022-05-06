@@ -129,9 +129,6 @@ const Config = {
             secretKey : "Cyberhack2010Yovangga@nandhika2021"
         },
         library : {
-            fastifyCors : {
-                origin : '*'
-            },
             socketIo : {
                 /*rememberTransport: false,
                 transports: ['WebSocket', 'Flash Socket', 'AJAX long-polling'],
@@ -144,6 +141,49 @@ const Config = {
             }
         },
         plugin : {
+            FastifySocketIO : {
+              enabled : true,
+              options : {
+                  /*rememberTransport: false,
+                  transports: ['WebSocket', 'Flash Socket', 'AJAX long-polling'],
+                  pingTimeout : 3000,
+                  pingInterval : 1000,*/
+                  perMessageDeflate : false,
+                  cors: {
+                      origin: '*',
+                  }
+              }
+            },
+            FastifyMultipart : {
+                enabled : true,
+                options : {
+
+                }
+            },
+            FastifyCookie : {
+                enabled : true,
+                options : {
+
+                }
+            },
+            FastifyPointOfView : {
+              enabled : true,
+              options : {
+
+              }
+            },
+            FastifyCors : {
+                enabled : true,
+                options : {
+                    origin : '*'
+                }
+            },
+            FastifyRateLimit : {
+              enabled : true,
+              options : {
+
+              }
+            },
             FastifyGracefulShutdown : {
                 enabled : false,
                 options : {}

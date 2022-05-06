@@ -75,6 +75,7 @@
     "@fastify/multipart": "^6.0.0",
     "@fastify/rate-limit": "^6.0.0",
     "@fastify/static": "^5.0.1",
+    "@rodrigogs/ispi": "^1.1.1",
     "@types/lodash": "^4.14.181",
     "ansi-colors": "^4.1.1",
     "app-root-path": "^3.0.0",

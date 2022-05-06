@@ -9,16 +9,9 @@ const server = new Promise(async (resolve, rejected) => {
         },
         settings : {
             ngrok : {
-                enabled : true,
+                enabled : false,
                 authToken : 'g3UD9sgpzrW41i6YGVWH_3w7oA58kHxKDgSNpmncba'
-            },
-            firewall : [
-                {
-                    method : 'GET',
-                    action : 'DENY',
-                    ip_address : "::1"
-                }
-            ]
+            }
         }
     }).then(async (result) => {
         //console.info(result)

@@ -50,7 +50,7 @@ const Options = {
     ERROR_STATE : `${ansiColors.red('Error')}`,
     WARNING_STATE : `${ansiColors.bgYellow('Warning')}`,
 
-    DELAY_TIME : 10,
+    DELAY_TIME : 2000,
 
     RASPBERRYPI_CORE_CLI : "native",
     RASPBERRY_CORE_GPIO : "gpio",
