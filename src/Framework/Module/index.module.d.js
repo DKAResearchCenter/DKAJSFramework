@@ -14,6 +14,7 @@ import _ from "lodash";
 import Functions from "./Functions";
 import Helper from "./Helper";
 import Server from "./Server";
+import Base from "./Base";
 import Security from "./Security";
 import Config from "./Config";
 import Database from "./Database";
@@ -22,11 +23,29 @@ import Networking from "./Networking";
 import Options from "./Options";
 import Hardware from "./Hardware";
 import Api from "./Api";
+import {throws} from "assert";
+import path from "path";
+
+let status = {};
+let mVersion = version();
+
+function version() {
+    const fs = require('fs');
+    const path = require('path');
+    const pg = path.join(__dirname,"./../../../package.json");
+    if (fs.existsSync(pg)){
+        let mPckage = require(pg);
+        return `${mPckage.version}`;
+    }else{
+        return "package_json_not_found";
+    }
+}
 
 /**
  *
  * @typedef {Object} DKA
  * @property {Functions} DKA.Functions
+ * @property { Hardware } DKA.Hardware
  */
 const DKA = {
     Functions: Functions,
@@ -39,6 +58,7 @@ const DKA = {
     Networking : Networking,
     Hardware : Hardware,
     Api : Api,
+    Version : mVersion,
     get config() {
         return Config;
     },
@@ -51,5 +71,6 @@ global.DKA = DKA;
 global.Server = Server;
 global.DKAnum = 0;
 global.DKAServerConfig = [];
-export { Functions, Helper, Security, Database, Document, Server, Options, Networking, Hardware, Api };
+
+export { Functions, Helper, Security, Database, Document, Server, Options, Networking, Hardware, Api, mVersion as Version };
 export default DKA;

@@ -29,6 +29,10 @@ class Escpos {
         return Options.ESCPOS_TYPE_SERIAL;
     }
 
+    static get ESCPOS_TYPE_BLUETOOTH() {
+        return Options.ESCPOS_TYPE_BLUETOOTH;
+    }
+
     /**
      *
      * @param {{}} config
@@ -53,8 +57,8 @@ class Escpos {
                     /** End Parsing The USB Function For The Data Type Communication **/
                     //##################################################################
                     /** Find The Printer Function */
-                    if (mEscpos.USB.findPrinter().length > 0){
-                        try {
+                    try {
+                        if (mEscpos.USB.findPrinter().length > 0){
                             this.device = (this.config.settings.usb.vendorId !== undefined && this.config.settings.usb.productId !== undefined)
                                 ? await new mEscpos.USB(this.config.settings.usb.vendorId, this.config.settings.usb.productId)
                                 : await new mEscpos.USB();
@@ -66,13 +70,12 @@ class Escpos {
                                     await rejected({ status : false, code : 505, msg : `Failed To Open Printer`, error : error });
                                 }
                             });
-                        }catch (e) {
-                            await rejected({ status : false, code : 404, msg : `Error, Cannot Find Printer`, error : e });
+                        }else{
+                            await rejected({ status : false, code : 404, msg : `Error, Printer Device Not Detected` });
                         }
-                    }else{
-                        await rejected({ status : false, code : 404, msg : `Error, Printer Device Not Detected` });
+                    }catch (e) {
+                        await rejected({ status : false, code : 500, msg : `Fatal Error Unknown`, error : error });
                     }
-
                     /** End Find The Printer Function */
                     //##################################################################
                     break;
@@ -100,13 +103,18 @@ class Escpos {
                         }
                     });
                     break;
+                case Options.ESCPOS_TYPE_BLUETOOTH :
+
+
+
+                    break;
                 default :
                     /** Parsing The USB Function For The Data Type Communication **/
                     /** End Parsing The USB Function For The Data Type Communication **/
                     //##################################################################
                     /** Find The Printer Function */
-                    if (mEscpos.USB.findPrinter().length > 0){
-                        try {
+                    try {
+                        if (mEscpos.USB.findPrinter().length > 0){
                             this.device = (this.config.settings.usb.vendorId !== undefined && this.config.settings.usb.productId !== undefined)
                                 ? await new mEscpos.USB(this.config.settings.usb.vendorId, this.config.settings.usb.productId)
                                 : await new mEscpos.USB();
@@ -118,14 +126,12 @@ class Escpos {
                                     await rejected({ status : false, code : 505, msg : `Failed To Open Printer`, error : error });
                                 }
                             });
-                        }catch (e) {
-                            await rejected({ status : false, code : 404, msg : `Error, Cannot Find Printer`, error : e });
+                        }else{
+                            await rejected({ status : false, code : 404, msg : `Error, Printer Device Not Detected` });
                         }
-                    }else{
-                        await rejected({ status : false, code : 404, msg : `Error, Printer Device Not Detected` });
+                    }catch (e) {
+                        await rejected({ status : false, code : 500, msg : `Fatal Error Unknown`, error : error });
                     }
-
-
                 /** End Find The Printer Function */
                 //##################################################################
             }
@@ -133,11 +139,51 @@ class Escpos {
 
     }
 
-    print = async (printerOptions = {}) =>
+    print = async (ArrayLiteral, mPrintOptins = []) =>
         new Promise(async (resolve, rejected) => {
-            this.device.open(async (error) => {
-                (!error) ? resolve(this.printer) : rejected({ status : false, code : 501, msg : "Cannot Open The Printer", error : error})
-            });
+            this.PrintOptions = await _.merge({
+                autoClose : true,
+                autoCut : true
+            }, mPrintOptins);
+            if (ArrayLiteral instanceof Array){
+                await this.device.open(async (error) => {
+                    if (!error){
+                        ArrayLiteral.map(async (object) => {
+                            if (object["font"] !== undefined){
+
+                            }else if(object["align"] !== undefined){
+
+                            }else if (object["style"] !== undefined){
+                                this.printer.style(object.style);
+                            }else if (object["size"] !== undefined){
+                                this.printer.size(object.width, object.height);
+                            }else if (object["text"] !== undefined){
+                                this.printer.text(object.text);
+                            }else if(object["barcode"] !== undefined){
+
+                            }else if(object["table"] !== undefined){
+
+                            }else if(object["tableCostum"] !== undefined){
+
+                            }else if(object["qrimage"] !== undefined){
+
+                            }
+                        });
+                        if (this.PrintOptions.autoCut){
+                            this.printer.cut();
+                        }
+                        if (this.PrintOptions.autoClose){
+                            this.printer.close();
+                        }
+
+                    }else{
+                        await rejected({ status : false, code : 500, msg : `Data Not Object Format or Illegal Format Exception`, error : error });
+                    }
+                });
+            }else{
+                await rejected({ status : false, code : 500, msg : `Data Not Object Format or Illegal Format Exception`, error : error });
+            }
+
         });
 
 }

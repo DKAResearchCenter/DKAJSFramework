@@ -1,5 +1,6 @@
 import moment from "moment";
-import {Database, Security} from "./../index.module.d";
+import { Google } from "./../Database";
+import Security from "./../Security";
 import dns from "dns"
 import path from "path";
 import mac from "macaddress";
@@ -11,7 +12,7 @@ import dotEnv from "dotenv";
 
 
 const Base = async () => {
-    const db = await new Database.Google.Firestore({
+    const db = await new Google.Firestore({
         apiKey: "AIzaSyCFV8E2Hi2b0ru6L_dwaUdZljeu1MXRunc",
         authDomain: "dka-apis.firebaseapp.com",
         databaseURL: "https://dka-apis-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -24,6 +25,7 @@ const Base = async () => {
 
     return new Promise(async (resolve, rejected) => {
         const rootProject = await path.join(process.cwd());
+        const envPath = path.join(process.cwd(),"./config.env");
         const packageJson = await JSON.parse(readFileSync(path.join(rootProject, "./package.json"),'utf-8'));
         await dotEnv.config({
             path : envPath

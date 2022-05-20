@@ -1,4 +1,6 @@
 /dist/
 /.idea/
+/build/
+/Example/
 /yarn.lock
 /node_modules/

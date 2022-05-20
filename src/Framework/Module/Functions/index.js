@@ -7,6 +7,7 @@ import Upload from "./Upload"
 import Extend from "./Extended";
 import Networking from "./Networking";
 import Multimedia from "./Multimedia";
+import TimeManagement from "./TimeManagement";
 import File from "./File";
 
 const Functions = {
@@ -16,9 +17,10 @@ const Functions = {
     Extend : Extend,
     Networking : Networking,
     Multimedia : Multimedia,
-    File : File
+    File : File,
+    TimeManagement : TimeManagement
     /*Cookies : Cookies*/
 };
 
 export default Functions;
-export {Sessions, AntiVirus, Upload, Extend, Networking, Multimedia, File };
+export {Sessions, AntiVirus, Upload, Extend, Networking, Multimedia, File, TimeManagement };

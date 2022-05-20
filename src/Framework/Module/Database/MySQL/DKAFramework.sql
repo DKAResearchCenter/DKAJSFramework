@@ -201,6 +201,10 @@ CREATE TABLE `dka-bigdata-document-government_licencedriver` (
 -- BIG DATA
 
 
+CREATE PROCEDURE ADD_DATABASE
+BEGIN
+
+end;
 
 
 

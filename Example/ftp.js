@@ -5,7 +5,7 @@ import { Database, Networking } from "./../";
 
 const ftp = new Promise(async (resolve, rejected) => {
 
-    const mFtp = new Networking.FTP({
+    const mFtp = await new Networking.FTP({
         host : "192.168.72.253",
         user : "tuza",
         password : "Tuza2021",

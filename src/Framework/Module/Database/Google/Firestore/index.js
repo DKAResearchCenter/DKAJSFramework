@@ -2,7 +2,7 @@ import Firebaseapp from "firebase/compat/app";
 import 'firebase/compat/firestore';
 
 import _ from "lodash";
-import DKA from "../../../index.module.d";
+import mConfig from "../../../Config";
 
 class Firestore {
 
@@ -12,8 +12,8 @@ class Firestore {
      * @return firebase.firestore.Firestore
      */
     constructor(config) {
-        this.config = _.extend(DKA.config.FirebaseConfig, config);
-        DKA.config.FirebaseConfig = this.config
+        this.config = _.extend(mConfig.FirebaseConfig, config);
+        mConfig.FirebaseConfig = this.config
         const app = Firebaseapp.initializeApp(this.config)
         return app.firestore();
     }

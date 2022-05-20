@@ -2,18 +2,23 @@ import path from "path";
 import fs from "fs";
 import _ from "lodash";
 import pdfkit from "pdfkit";
+import Options from "./../../Options";
 
 
 class PDF {
 
-
     static get ENGINE_PDFKIT(){
-        return 1;
+        return Options.ENGINE_PDFKIT;
     }
 
     static get PAPER_SIZE_A4(){
-        return 'A4';
+        return Options.PAPER_SIZE_A4;
     }
+
+    /**
+     *
+     * @returns {PDF}
+     */
     constructor(config) {
         this.config = _.merge({
             engine : PDF.ENGINE_PDFKIT,
@@ -28,22 +33,36 @@ class PDF {
         return this;
     }
 
+    /**
+     *
+     * @param size
+     * @returns {PDF}
+     */
     addPage = (size) => {
         this.Document.addPage({ size : size });
         return this;
     }
-
-    addFont = (config) => {
-        let fontConfig = _.merge({
+    /**
+     *
+     * @param config
+     * @returns {Promise<PDF>}
+     */
+    addFont = async (config) => {
+        let fontConfig = await _.merge({
             fontLocation : path.join(__dirname, "./Template/fonts/arial.ttf"),
             fontSize : 12
         }, config);
+
         this.Document
             .font(fontConfig.fontLocation)
             .fontSize(fontConfig.fontSize);
         return this;
     }
-
+    /**
+     *
+     * @param string
+     * @returns {PDF}
+     */
     addText = (string) => {
         this.Document.text(`${string}`)
         return this;

@@ -2,6 +2,7 @@ import DKA from "./../../../../index.module.d"
 import _ from "lodash";
 import firebase from "firebase/app";
 import firestore from "firebase/firestore";
+import storage from "firebase/storage";
 
 class Firebase {
     app = null;
@@ -24,10 +25,22 @@ class Firebase {
 
     /**
      *
-     * @param {firebase.firestore} callback
-     * @return {Promise<firebase.firestore>}
+     * @return {Promise<module:@firebase/firestore.getFirestore>}
+     * @param app
      */
-    firestore = new firestore.getFirestore(this.app);
+    firestore = async (app = this.app) => await new firestore.getFirestore(app);
+
+    /**
+     *
+     * @param {firebase} app
+     * @returns {Promise<module:@firebase/storage.getStorage>}
+     */
+    storage = async (app = this.app) => await new storage.getStorage(app);
+
+
+
+
+
 
 }
 

@@ -1,12 +1,10 @@
-import { Database, Server } from "./../";
+import { Database, Server, Options } from "./../";
 
 const server = new Promise(async (resolve, rejected) => {
     await Server({
+        serverEngine : Options.REACTJS_CORE_ENGINE,
         serverPort : 1999,
-        app : async(app, opts, next) => {
-
-            next();
-        },
+        app : true,
         settings : {
             ngrok : {
                 enabled : false,

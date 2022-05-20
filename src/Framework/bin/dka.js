@@ -43,9 +43,6 @@ const program = new Command();
                     nodemonInst = await nodemon(finalScript)
                     resolve()
                 }
-            }).then(async () => {
-                const io = require("./Component/io");
-                return io(nodemonInst);
             }).finally(async () => {
                 await nodemon.once('start', async () => {
                     console.log(`DKA Engine V.${mPackage.version}. Program Starting ...`);
@@ -54,6 +51,7 @@ const program = new Command();
                     //process.exit(1);
                 }).on('quit', function () {
                     console.log(`DKA Program V.${mPackage.version} Has Quit ...`);
+                    process.exit();
                 }).on('restart', function (files) {
                     console.log(`The DKA Program V.${mPackage.version} has Restarted.`);
                 });

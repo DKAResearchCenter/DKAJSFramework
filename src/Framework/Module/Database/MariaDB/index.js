@@ -231,7 +231,6 @@ class MariaDB {
 
             await Object.keys(Rule.data).forEach((key) => {
                 this.mKey.push(` \`${(this.options.encryption.enabled && this.options.encryption.options.column) ? this.EncryptionModule.encodeIvSync(`${key}`) : key}\` `);
-
                 this.mVal.push(`"${(this.options.encryption.enabled && this.options.encryption.options.column) ? this.EncryptionModule.encodeIvSync(`${Rule.data[key]}`) : Rule.data[key]}"`);
             });
 

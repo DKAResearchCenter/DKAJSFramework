@@ -111,30 +111,38 @@ const Server = async (config) => {
                         /** Checking Variable **/
                         switch (typeof appType){
                             case "boolean" :
-                                if (configuration.app){
-                                    if (existsSync(configuration.options.appDir)){
-                                        if (require(configuration.options.appDir).default !== undefined){
-                                            let fromDirController = require(configuration.options.appDir).default;
-                                            if (typeof fromDirController === "function"){
-                                                mAppPointing = require(configuration.options.appDir).default;
+                                switch (appType){
+                                    case true :
+                                        if (existsSync(configuration.options.appDir)){
+                                            if (require(configuration.options.appDir).default !== undefined){
+                                                let fromDirController = require(configuration.options.appDir).default;
+                                                if (typeof fromDirController === "function"){
+                                                    mAppPointing = require(configuration.options.appDir).default;
+                                                }else{
+                                                    setTimeout(async () => {
+                                                        await process.exit()
+                                                    }, 2000);
+                                                    throw { status : false, code : 500, msg : `index.js in ${configuration.options.appDir} folder Illegal Format`}
+                                                }
                                             }else{
                                                 setTimeout(async () => {
                                                     await process.exit()
-                                                }, 4000);
-                                                throw { status : false, code : 500, msg : `index.js in Controller folder Illegal Format`}
+                                                }, 2000);
+                                                throw { status : false, code : 500, msg : `index.js in ${configuration.options.appDir} folder don't have default export`}
                                             }
                                         }else{
                                             setTimeout(async () => {
                                                 await process.exit()
-                                            }, 4000);
-                                            throw { status : false, code : 500, msg : `index.js in Controller folder don't have default export`}
+                                            }, 2000);
+                                            throw { status : false, code : 500, msg : `File ${configuration.options.appDir} don't exist`}
                                         }
-                                    }
-                                }else{
-                                    mAppPointing = async (app, opts, next) => {
-                                        //Default Page
-                                        await next();
-                                    };
+                                        break;
+                                    case false :
+                                        mAppPointing = async (app, opts, next) => {
+                                            //Default Page
+                                            await next();
+                                        };
+                                        break;
                                 }
                                 break;
                             case "function" :
@@ -143,7 +151,7 @@ const Server = async (config) => {
                             default :
                                 setTimeout(async () => {
                                     await process.exit()
-                                }, 4000);
+                                }, 2000);
                                 throw { status : false, code : 500, msg : `Illegal app pointing. app must boolean or function`};
                         }
 

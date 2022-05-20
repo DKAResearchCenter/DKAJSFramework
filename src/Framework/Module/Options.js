@@ -41,6 +41,9 @@ const Options = {
     MARIADB_POOL_CLUSTER : 2,
     MARIADB_POOL : 3,
 
+    ENGINE_PDFKIT : "PDF_KIT_ENGINE",
+    PAPER_SIZE_A4 : "A4",
+
     READY_STATE : `${ansiColors.blue('Ready')}`,
     LOADING_STATE : `${ansiColors.blue('Loading')}`,
     LOADED_STATE : `${ansiColors.green('Loaded')}`,
@@ -50,7 +53,7 @@ const Options = {
     ERROR_STATE : `${ansiColors.red('Error')}`,
     WARNING_STATE : `${ansiColors.bgYellow('Warning')}`,
 
-    DELAY_TIME : 2000,
+    DELAY_TIME : 10,
 
     RASPBERRYPI_CORE_CLI : "native",
     RASPBERRY_CORE_GPIO : "gpio",
@@ -66,6 +69,7 @@ const Options = {
     ESCPOS_TYPE_USB : 1,
     ESCPOS_TYPE_NETWORK : 2,
     ESCPOS_TYPE_SERIAL : 3,
+    ESCPOS_TYPE_BLUETOOTH : 4,
 
     ENCRYPTION_ENGINE_JWT : "JWT",
     ENCRYPTION_ENGINE_CRYPTO : "CRYPTO",

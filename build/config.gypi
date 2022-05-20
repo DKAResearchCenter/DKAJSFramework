@@ -361,6 +361,7 @@
     "nodedir": "C:\\Users\\ARA\\AppData\\Local\\node-gyp\\Cache\\17.6.0",
     "standalone_static_library": 1,
     "msbuild_path": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\MSBuild\\Current\\Bin\\MSBuild.exe",
+    "m": "true",
     "bin_links": "true",
     "ignore_optional": "",
     "ignore_scripts": "",
