@@ -55,29 +55,7 @@ const program = new Command();
                 }).on('restart', function (files) {
                     console.log(`The DKA Program V.${mPackage.version} has Restarted.`);
                 });
-            })
-
-
-
-
-
-            /*await Base.default().then(async (res) => {
-                if (res.status){
-                    console.log(res);
-                    if (fs.existsSync(configFilePath)){
-                        await nodemon(`${watchOpt} --exec ${babelOpt} --config-file ${configFilePath} ${file}`);
-                    }else{
-                        console.error(`Fatal Error, DKA Framework not Installed Locally. please run "npm install dkaframework@latest" or "yarn add dkaframework@latest" `);
-                        process.exit(1);
-                    }
-                }else{
-                    console.log(res)
-                    process.exit(1);
-                }
-            }).catch(async (err) => {
-                console.log(err);
-                process.exit(1);
-            });*/
+            });
 
         });
 
