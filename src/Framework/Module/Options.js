@@ -59,6 +59,7 @@ const Options = {
     RASPBERRY_CORE_GPIO : "gpio",
 
     GPIO_DIR_OUT : gpio.DIRECTION.OUT,
+    GPIO_DIR_HIGH : gpio.DIRECTION.HIGH,
     GPIO_DIR_IN : gpio.DIRECTION.IN,
     GPIO_DIR_UP : 'up',
     GPIO_DIR_DOWN : 'down',

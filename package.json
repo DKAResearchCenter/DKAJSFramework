@@ -1,7 +1,7 @@
 {
   "name": "dkaframework",
   "version": "1.0.355",
-  "description": "DKA Framework Multi Function",
+  "description": "The Powerfull Multi Integrator Program Base",
   "main": "dist/Framework/Module/index.module.d.js",
   "author": "Yovangga Anandhika",
   "license": "MIT",
@@ -31,17 +31,18 @@
     "dev-server": "nodemon --watch Example --exec babel-node ./Example/index.js",
     "dev": "yarn run compile && nodemon --watch Example --exec babel-node ./Example/index.js",
     "compile-ts": "npx tsc",
-    "electron": "",
+    "electron": "electron-rebuild -f -w usb-detection",
     "yarn-audit": "yarn-audit-fix",
     "install": "node-gyp -m rebuild"
   },
   "prepublish": "tsc",
   "publishConfig": {
-    "registry":"https://npm.pkg.github.com"
+    "registry": "https://npm.pkg.github.com"
   },
   "devDependencies": {
     "crypto": "^1.0.1",
     "depcheck": "^1.4.3",
+    "electron-rebuild": "^3.2.7",
     "js-cookie": "^3.0.0",
     "jsdoc": "^3.6.10",
     "jsdoc-template": "^1.2.0",
@@ -118,7 +119,7 @@
     "escpos": "^3.0.0-alpha.6",
     "escpos-network": "^3.0.0-alpha.5",
     "escpos-serialport": "^3.0.0-alpha.4",
-    "escpos-usb": "3.0.0-alpha.2",
+    "escpos-usb": "^3.0.0-alpha.4",
     "events": "^3.3.0",
     "express": "^4.17.3",
     "fast-json-stringify": "^3.0.3",

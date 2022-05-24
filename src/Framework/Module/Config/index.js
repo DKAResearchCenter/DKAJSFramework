@@ -281,7 +281,13 @@ const Config = {
         Printer : {
             Escpos : {
                 type: Options.ESCPOS_TYPE_USB,
+                copyright : {
+                    enabled : false,
+                    banner : `DKA Framework Engine V.${require("./../../../../package.json").version}`,
+                    description : `${require("./../../../../package.json").description}`
+                },
                 settings: {
+                    monitoring : true,
                     usb: {
                         vendorId: undefined,
                         productId: undefined,

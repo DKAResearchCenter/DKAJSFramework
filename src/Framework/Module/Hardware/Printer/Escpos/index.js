@@ -5,188 +5,128 @@ import mEscpos from "escpos";
 import mEscposUsb from "escpos-usb";
 import mEscposNetwork from "escpos-network";
 import mEscposSerial from "escpos-serialport";
+import usbDetection from "usb-detection";
 import _ from "lodash";
 
 mEscpos.USB = mEscposUsb;
 mEscpos.network = mEscposNetwork;
-mEscpos.serial = mEscposSerial
+mEscpos.serial = mEscposSerial;
+
+
 
 class Escpos {
-    config = null;
-    device = null;
-    printer = null;
 
-
-    static get ESCPOS_TYPE_USB(){
-        return Options.ESCPOS_TYPE_USB;
-    }
-
-    static get ESCPOS_TYPE_NETWORK(){
-        return Options.ESCPOS_TYPE_NETWORK;
-    }
-
-    static get ESCPOS_TYPE_SERIAL(){
-        return Options.ESCPOS_TYPE_SERIAL;
-    }
-
-    static get ESCPOS_TYPE_BLUETOOTH() {
-        return Options.ESCPOS_TYPE_BLUETOOTH;
+    constructor(config) {
+        this.config = _.merge(DKA.config.Hardware.Printer.Escpos, config );
+        global.configEscposGlobally = this.config;
     }
 
     /**
      *
-     * @param {{}} config
-     * @param {Number} config.type
-     * @param {{}} config.settings
-     * @param {String} config.settings.usb.vendorId
-     * @param {String} config.settings.usb.productId
-     * @param {type[]} config.settings.network.ipAddress
-     * @param {type[]} config.settings.network.port
-     * @param {type[]} config.settings.serial.port
-     * @param {{}} config.settings.serial.settings
-     * @param {Number} config.settings.serial.settings.baudRate
-     * @param {Number} config.settings.serial.settings.stopBit
-     * @return Promise<printer>
+     * @type {Promise<mEscpos.Printer | Object>}
      */
-    constructor(config) {
-        this.config = _.merge(DKA.config.Hardware.Printer.Escpos, config );
-        return new Promise(async (resolve, rejected) => {
-            switch (this.config.type){
-                case Options.ESCPOS_TYPE_USB :
-                    /** Parsing The USB Function For The Data Type Communication **/
-                    /** End Parsing The USB Function For The Data Type Communication **/
-                    //##################################################################
-                    /** Find The Printer Function */
-                    try {
-                        if (mEscpos.USB.findPrinter().length > 0){
-                            this.device = (this.config.settings.usb.vendorId !== undefined && this.config.settings.usb.productId !== undefined)
-                                ? await new mEscpos.USB(this.config.settings.usb.vendorId, this.config.settings.usb.productId)
-                                : await new mEscpos.USB();
-                            this.printer = await new mEscpos.Printer(this.device, this.config.options);
-                            this.device.open(async (error) => {
-                                if (!error){
-                                    await resolve(this.printer);
-                                }else{
-                                    await rejected({ status : false, code : 505, msg : `Failed To Open Printer`, error : error });
-                                }
-                            });
-                        }else{
-                            await rejected({ status : false, code : 404, msg : `Error, Printer Device Not Detected` });
-                        }
-                    }catch (e) {
-                        await rejected({ status : false, code : 500, msg : `Fatal Error Unknown`, error : error });
-                    }
-                    /** End Find The Printer Function */
-                    //##################################################################
-                    break;
-                case Options.ESCPOS_TYPE_NETWORK :
-                    /** Parsing The Network Function For The Data Type Communication **/
-                    /** End Parsing The Network Function For The Data Type Communication **/
-                    //#########################################################################################
-                    this.device = new mEscpos.network(this.config.settings.network.ipAddress, this.config.settings.network.port);
-                    this.printer = new mEscpos.Printer(this.device, this.config.options);
-
-                    break;
-                case Options.ESCPOS_TYPE_SERIAL :
-                    /** Start Parsing The Serial Function For The Data Type Communication **/
-                    /** End Start Parsing The Serial Function For The Data Type Communication **/
-                    this.device = (this.config.settings.serial.settings !== undefined)
-                        ? new mEscpos.serial(this.config.settings.serial.port, this.config.settings.serial.settings)
-                        : new mEscpos.serial(this.config.settings.serial.port);
-
-                    this.printer = new mEscpos.Printer(this.device, this.config.options);
-                    this.device.open(async (error) => {
-                        if (!error){
-                            await resolve(this.printer);
-                        }else{
-                            await rejected({ status : false, code : 505, msg : `Failed To Open Printer`, error : error });
-                        }
-                    });
-                    break;
-                case Options.ESCPOS_TYPE_BLUETOOTH :
-
-
-
-                    break;
-                default :
-                    /** Parsing The USB Function For The Data Type Communication **/
-                    /** End Parsing The USB Function For The Data Type Communication **/
-                    //##################################################################
-                    /** Find The Printer Function */
-                    try {
-                        if (mEscpos.USB.findPrinter().length > 0){
-                            this.device = (this.config.settings.usb.vendorId !== undefined && this.config.settings.usb.productId !== undefined)
-                                ? await new mEscpos.USB(this.config.settings.usb.vendorId, this.config.settings.usb.productId)
-                                : await new mEscpos.USB();
-                            this.printer = await new mEscpos.Printer(this.device, this.config.options);
-                            this.device.open(async (error) => {
-                                if (!error){
-                                    await resolve(this.printer);
-                                }else{
-                                    await rejected({ status : false, code : 505, msg : `Failed To Open Printer`, error : error });
-                                }
-                            });
-                        }else{
-                            await rejected({ status : false, code : 404, msg : `Error, Printer Device Not Detected` });
-                        }
-                    }catch (e) {
-                        await rejected({ status : false, code : 500, msg : `Fatal Error Unknown`, error : error });
-                    }
-                /** End Find The Printer Function */
+    open = new Promise(async (resolve, rejected) => {
+        switch (configEscposGlobally.type){
+            case Options.ESCPOS_TYPE_USB :
+                /** Parsing The USB Function For The Data Type Communication **/
+                /** End Parsing The USB Function For The Data Type Communication **/
                 //##################################################################
-            }
-        })
-
-    }
-
-    print = async (ArrayLiteral, mPrintOptins = []) =>
-        new Promise(async (resolve, rejected) => {
-            this.PrintOptions = await _.merge({
-                autoClose : true,
-                autoCut : true
-            }, mPrintOptins);
-            if (ArrayLiteral instanceof Array){
-                await this.device.open(async (error) => {
-                    if (!error){
-                        ArrayLiteral.map(async (object) => {
-                            if (object["font"] !== undefined){
-
-                            }else if(object["align"] !== undefined){
-
-                            }else if (object["style"] !== undefined){
-                                this.printer.style(object.style);
-                            }else if (object["size"] !== undefined){
-                                this.printer.size(object.width, object.height);
-                            }else if (object["text"] !== undefined){
-                                this.printer.text(object.text);
-                            }else if(object["barcode"] !== undefined){
-
-                            }else if(object["table"] !== undefined){
-
-                            }else if(object["tableCostum"] !== undefined){
-
-                            }else if(object["qrimage"] !== undefined){
-
+                /** Find The Printer Function */
+                try {
+                    if (mEscpos.USB.findPrinter().length > 0){
+                        this.device = (this.config.settings.usb.vendorId !== undefined && this.config.settings.usb.productId !== undefined)
+                            ? await new mEscpos.USB(this.config.settings.usb.vendorId, this.config.settings.usb.productId)
+                            : await new mEscpos.USB();
+                        this.printer = await new mEscpos.Printer(this.device, this.config.options);
+                        this.device.open(async (error) => {
+                            if (!error){
+                                if (this.config.copyright.enabled){
+                                    this.printer
+                                        .align('ct')
+                                        .style('b')
+                                        .text(this.config.copyright.banner)
+                                        .style('')
+                                        .text(this.config.copyright.description)
+                                        .feed(3)
+                                        .align('lt')
+                                }
+                                await resolve(this.printer, mEscpos);
+                            }else{
+                                await rejected({ status : false, code : 505, msg : `Failed To Open Printer`, error : error });
                             }
                         });
-                        if (this.PrintOptions.autoCut){
-                            this.printer.cut();
-                        }
-                        if (this.PrintOptions.autoClose){
-                            this.printer.close();
-                        }
-
                     }else{
-                        await rejected({ status : false, code : 500, msg : `Data Not Object Format or Illegal Format Exception`, error : error });
+                        await rejected({ status : false, code : 404, msg : `Error, Printer Device Not Detected` });
+                    }
+                }catch (error) {
+                    await rejected({ status : false, code : 500, msg : `Fatal Error Unknown`, error : error });
+                }
+                /** End Find The Printer Function */
+                //##################################################################
+                break;
+            case Options.ESCPOS_TYPE_NETWORK :
+                /** Parsing The Network Function For The Data Type Communication **/
+                /** End Parsing The Network Function For The Data Type Communication **/
+                //#########################################################################################
+                this.device = new mEscpos.network(this.config.settings.network.ipAddress, this.config.settings.network.port);
+                this.printer = new mEscpos.Printer(this.device, this.config.options);
+
+                break;
+            case Options.ESCPOS_TYPE_SERIAL :
+                /** Start Parsing The Serial Function For The Data Type Communication **/
+                /** End Start Parsing The Serial Function For The Data Type Communication **/
+                this.device = (this.config.settings.serial.settings !== undefined)
+                    ? new mEscpos.serial(this.config.settings.serial.port, this.config.settings.serial.settings)
+                    : new mEscpos.serial(this.config.settings.serial.port);
+
+                this.printer = new mEscpos.Printer(this.device, this.config.options);
+                this.device.open(async (error) => {
+                    if (!error){
+                        this.printer.getStatuses(async () => {
+
+                        })
+                        await resolve(this.printer);
+                    }else{
+                        await rejected({ status : false, code : 505, msg : `Failed To Open Printer`, error : error });
                     }
                 });
-            }else{
-                await rejected({ status : false, code : 500, msg : `Data Not Object Format or Illegal Format Exception`, error : error });
-            }
+                break;
+            case Options.ESCPOS_TYPE_BLUETOOTH :
 
-        });
 
+
+                break;
+            default :
+                /** Parsing The USB Function For The Data Type Communication **/
+                /** End Parsing The USB Function For The Data Type Communication **/
+                //##################################################################
+                /** Find The Printer Function */
+                try {
+                    if (mEscpos.USB.findPrinter().length > 0){
+                        this.device = (this.config.settings.usb.vendorId !== undefined && this.config.settings.usb.productId !== undefined)
+                            ? await new mEscpos.USB(this.config.settings.usb.vendorId, this.config.settings.usb.productId)
+                            : await new mEscpos.USB();
+                        this.printer = await new mEscpos.Printer(this.device, this.config.options);
+                        this.device.open(async (error) => {
+                            if (!error){
+                                await resolve(this.printer, this.device);
+                            }else{
+                                await rejected({ status : false, code : 505, msg : `Failed To Open Printer`, error : error });
+                            }
+                        });
+                    }else{
+                        await rejected({ status : false, code : 404, msg : `Error, Printer Device Not Detected` });
+                    }
+                }catch (e) {
+                    await rejected({ status : false, code : 500, msg : `Fatal Error Unknown`, error : e });
+                }
+            /** End Find The Printer Function */
+            //##################################################################
+        }
+    })
 }
+
+
 
 
 export default Escpos;
