@@ -46,7 +46,7 @@ const program = new Command();
             }).finally(async () => {
                 await nodemon.once('start', async () => {
                     console.log(`DKA Engine V.${mPackage.version}. Program Starting ...`);
-                }).on('crash', function () {
+                }).on('crash', function (e) {
                     console.log(`DKA Program Has Detecting Crash ...`);
                     //process.exit(1);
                 }).on('quit', function () {
