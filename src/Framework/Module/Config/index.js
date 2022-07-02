@@ -5,14 +5,14 @@ import path from "path";
 import fs from "fs";
 
 /**
- *
- * @type {
- *  {
- *  SecretConfig : { SignSecret: string, EncryptSecret: string}, Networking: {DHCP: {broadcast: string, router: string, static: [{hostname: string, mac_address: string, ip_address: string}], netmask: string, dns: string[], range: string[], on_commit: string, interface: string, network: string}}, Server: {app: boolean, settings: {localtunnel: boolean, reactCompress: boolean, reactHot: boolean, secretKey: string, firewall: *[], ngrok: {authToken: null, enabled: boolean}, reactOpen: boolean}, serverView: number, serverEngine: number, serverName, serverPort: number, secure: boolean, serverHost: string, serverEnabled: boolean, serverState: string, library: {socketIo: {httpCompression: {chunkSize: number, threshold: number, memLevel: number, windowBits: number}, cors: {origin: string}, perMessageDeflate: {serverNoContextTakeover: boolean, zlibDeflateOptions: {chunkSize: number}, clientNoContextTakeover: boolean, threshold: number, concurrencyLimit: number, zlibInflateOptions: {memLevel: number, windowBits: number}, serverMaxWindowBits: number}}}, plugin: {FastifyGracefulShutdown: boolean, FastifyLog: {options: {}, enabled: boolean}, FastifyHelmet: {options: {contentSecurityPolicy: boolean}, enabled: boolean}, FastifyCompress: {options: {global: boolean}, enabled: boolean}}, options: {layoutDir: string, distDir: string, backupDir: string, autoloadDir: string, uploadDir: string, appDir: string, srcDir: string, assetsDir: string, publicDir: string}, serverDomain: boolean, http2: boolean, Webpack: {mode: string, resolve: {extensions: string[]}, module: {rules: [{test: RegExp, use: {loader: string, options: {presets: string[], plugins: string[]}}, exclude: RegExp},{test: RegExp, use: string[]},{test: RegExp, use: [{loader: string},{loader: string}]}]}, target: string}}, Database: {NeDB: {inMemoryOnly: boolean, filename: string, timestampData: boolean, afterSerialization: (function(*): *), beforeDeserialization: (function(*): *), dbName: string, autoload: boolean}, MariaDB: {debug: boolean, compress: boolean, timezone: string, autoBackup: boolean, password: string, database: string, connectionLimit: number, encryption: {secretKey: string, engine: string, options: {data: boolean, column: boolean, table: boolean}, alg: string, enabled: boolean}, engine: number, port: number, bigIntAsNumber: boolean, host: string, lang: string, user: string}}, Hardware: {Printer: {Escpos: {settings: {usb: {productId: undefined, vendorId: undefined}, serial: {settings: undefined, port: string}, network: {port: number, ipAddress: string}}, options: {encoding: string}, type: number}}}, FirebaseConfig: {storageBucket: string, apiKey: string, messagingSenderId: string, appId: string, projectId: string, measurementId: string, databaseURL: string, authDomain: string}, Global: {keySecret: string}}}
+ * @namespace Config
+ * @type {{SecretConfig: {SignSecret: string, EncryptSecret: string}, Networking: {DHCP: {broadcast: string, router: string, static: [{hostname: string, mac_address: string, ip_address: string}], netmask: string, dns: string[], range: string[], on_commit: string, interface: string, network: string}}, Server: Object, Database: {NeDB: {inMemoryOnly: boolean, filename: string, timestampData: boolean, afterSerialization: (function(*): *), beforeDeserialization: (function(*): *), dbName: string, autoload: boolean}, MariaDB: {debug: boolean, compress: boolean, timezone: string, autoBackup: boolean, password: string, database: string, connectionLimit: number, encryption: {secretKey: string, engine: string, options: {data: boolean, column: boolean, table: boolean}, alg: string, enabled: boolean}, engine: number, port: number, host: string, lang: string, user: string}}, Hardware: {Printer: {Escpos: {settings: {usb: {productId: undefined, vendorId: undefined}, serial: {settings: undefined, port: string}, monitoring: boolean, network: {port: number, ipAddress: string}}, copyright: {banner: string, description: string, enabled: boolean}, options: {encoding: string}, type: number}}}, FirebaseConfig: {storageBucket: string, apiKey: string, messagingSenderId: string, appId: string, projectId: string, measurementId: string, databaseURL: string, authDomain: string}, Global: Object}}
  */
+
 const Config = {
     /**
-     * @param {Object} Global
+     * @type { Object }
+     * @description The Global Configuration For All Module
      */
     Global : {
         keySecret : "Cyberhack2010Yovangga1997dkaframework"
@@ -92,18 +92,61 @@ const Config = {
             }
         }
     },
+    /**
+     * @namespace Config.Server
+     * @memberOf Config
+     * @description the server
+     */
     Server : {
-        /** ServerName For Naming App Server **/
+        /**
+         * @memberOf Config.Server
+         * @description The Server Name For Your Project
+         */
         serverName : (fs.existsSync(path.join(process.cwd(), 'package.json'))) ? require(path.join(process.cwd(),'package.json')).name : null,
-        /** Server Domain For Naming Service Domain Access **/
+        /**
+         * @memberOf Config.Server
+         * @type { Boolean | String }
+         * @description For Set server Domain
+         * @default false
+         * @author Yovangga Anandhika
+         * @example
+         * serverDomain : "https://localhost
+         */
         serverDomain : false,
-        /** Server State Overide Enable and Disabled **/
+        /** Server State Overide Enable and Disabled
+         * @memberOf Config.Server
+         * @type { Boolean }
+         * @description - Disable Or Enabled Project Runtime Load
+         * @default true
+         * **/
         serverEnabled : true,
-        /** Memilih Jenis Server Engine Yang Ingin Digunakan **/
+        /**
+         * @memberOf Config.Server
+         * @type { Number }
+         * @description The Selected Engine For The Project
+         * <ul style="list-style: none;">
+         *  <li> serverEngine : Options.HTTP2_CORE_ENGINE
+         *  <li> serverEngine : Options.HTTP2_CORE_ENGINE
+         *  <li> serverEngine : Options.EXPRESS_CORE_ENGINE
+         *  <li style="color : red;"> serverEngine : Options.FASTIFY_CORE_ENGINE [ Default]
+         *  <li> serverEngine : Options.RESTIFY_CORE_ENGINE
+         *  <li> serverEngine : Options.REACTJS_CORE_ENGINE
+         *  <li> serverEngine : Options.SOCKETIO_CORE_ENGINE
+         * </ul>
+         */
         serverEngine : Options.FASTIFY_CORE_ENGINE,
         /** Untuk melakukan Set View Template View Di Dalam Framework **/
         serverView : Options.VIEW_POV_EJS,
-        /** State Server {Server.SERVER_STATE_DEVELOPMENT | Server.SERVER_STATE_PRODUCTION } **/
+        /** State Server {Server.SERVER_STATE_DEVELOPMENT | Server.SERVER_STATE_PRODUCTION }
+         * @memberOf Config.Server
+         * @type { "dev" | "prod" }
+         * @description The ServerState Debug or Production
+         *
+         * <ul style="list-style: none;">
+         *  <li> serverState : Server.SERVER_STATE_DEVELOPMENT
+         *  <li> serverState : Server.SERVER_STATE_PRODUCTION
+         * </ul>
+         * **/
         serverState : Options.SERVER_STATE_DEVELOPMENT,
         /** Server Domain Location **/
         serverHost : "localhost",
@@ -113,13 +156,16 @@ const Config = {
         http2 : false,
         /** Activated Security System **/
         secure : false,
-        /** Memulai System App Controller **/
+        /** Memulai System App Controller
+         * @memberOf Config.Server
+         *
+         * **/
         app : false,
         /** Setting System Settings **/
         settings : {
             reactOpen : true,
             reactHot : true,
-            reactCompress : true,
+            reactCompress : false,
             firewall : [],
             /** Ngrok Tunneling **/
             ngrok : {
@@ -127,7 +173,15 @@ const Config = {
                 authToken : null
             },
             localtunnel : false,
-            secretKey : "Cyberhack2010Yovangga@nandhika2021"
+            secretKey : "Cyberhack2010Yovangga@nandhika2021",
+            pingTimeout : 2000,
+            pingInterval : 1000,
+            connectTimeout : 2000,
+            perMessageDeflate : false,
+            maxListeners : 100,
+            cors: {
+                origin: '*',
+            }
         },
         library : {
             socketIo : {

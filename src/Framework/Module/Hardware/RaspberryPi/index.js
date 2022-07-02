@@ -2,8 +2,6 @@
 'use strict';
 import Options from "./../../Options";
 import _ from "lodash";
-import gpio from "gpio";
-import mDelay from "delay";
 import { execSync } from "child_process";
 import isPi from "@rodrigogs/ispi";
 
@@ -37,12 +35,18 @@ class RaspberryPi {
             defaultLower : false
         }, config);
 
+
         switch (this.config.engine) {
             case RaspberryPi.ENGINE_JHONNYFIVE :
                 //this.engineInstance = new Board();
                 break;
             case RaspberryPi.ENGINE_GPIO_LIBRARY :
-                this.engineInstance = gpio;
+                import("gpio")
+                    .then(async (gpio) => {
+                        this.engineInstance = gpio;
+                    }).catch(async (error) => {
+                      throw Error("MODULE GPIO NOT EXISTS OR NOT INSTALLED. PLEASE INSTALLED FIRST");
+                });
                 break;
             default :
                 //this.engineInstance = new Board();

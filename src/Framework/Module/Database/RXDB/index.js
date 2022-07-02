@@ -1,5 +1,4 @@
 import _ from "lodash";
-import {createRxDatabase} from "rxdb";
 
 class RxDB {
 
@@ -10,8 +9,13 @@ class RxDB {
             name : "test",
 
         }, config);
-        this.db = createRxDatabase(this.#config);
 
+        import("rxdb")
+            .then(async (rxdb) => {
+                this.db = await rxdb.createRxDatabase(this.#config);
+        }).catch(async (error) => {
+            throw Error("MODULE RXDB NOT FOUND");
+        });
     }
 }
 

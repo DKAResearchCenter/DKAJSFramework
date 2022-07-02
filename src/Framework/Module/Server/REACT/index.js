@@ -1,5 +1,5 @@
 import path from "path";
-import fs, {existsSync} from "fs";
+import fs, { existsSync } from "fs";
 import _ from "lodash";
 import Options from "./../../Options";
 
@@ -54,8 +54,17 @@ export default (config) => new Promise(async (resolve, reject) => {
             new HtmlWebpackPlugin(
                 {
                     template : path.resolve(config.options.publicDir, "./index.html")
-                })
-        ]
+                }),
+            new Webpack.ProvidePlugin({
+                process: 'process/browser',
+            })
+        ],
+        resolve: {
+            // configuration options
+            alias: {
+                process: "process/browser"
+            }
+        },
     }, config.Webpack);
 
     await mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "merged setting for react webpack"});
@@ -93,6 +102,7 @@ export default (config) => new Promise(async (resolve, reject) => {
             static: {
                 directory: config.options.publicDir,
             },
+            historyApiFallback: true,
             compress: config.settings.reactCompress,
             port: config.serverPort,
             // Enable hot reloading

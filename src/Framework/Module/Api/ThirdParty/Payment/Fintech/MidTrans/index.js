@@ -1,5 +1,4 @@
 import _ from "lodash";
-import midtrans from "midtrans-client";
 
 class MidTrans {
 
@@ -28,6 +27,17 @@ class MidTrans {
             serverKey : null,
             clientKey : null
         }, config);
+
+        function checkModuleExist(name){
+            try {
+                require.resolve(name);
+                return true;
+            }catch (e) {
+                return false;
+            }
+        }
+
+        let midtrans = checkModuleExist("midtrans-client") ? require("midtrans-client") : null;
 
         switch (this.config.engine){
             case MidTrans.ENGINE_MIDTRANS_CORE_API :

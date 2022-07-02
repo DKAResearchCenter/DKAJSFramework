@@ -7,14 +7,10 @@ import _ from "lodash";
 import moment from "moment";
 import ansiColors from "ansi-colors";
 import emojic from "node-emoji";
-import {existsSync} from "fs";
-
 /**
  * Functions Fot Class Mysql Connector In Framework
  * All Right Reserved
  * **/
-
-
 
 /**
  * @description Ini Adalah Module Library Yang Berisi Konfigurasi Server Untuk Membangun Sebuah Arsitektur Webserver
@@ -29,6 +25,7 @@ import {existsSync} from "fs";
  */
 
 class MariaDB {
+    MariaDBEngine;
     #returnedResult;
     #mWhere;
     #mKey;
@@ -141,8 +138,8 @@ class MariaDB {
         DKA.config.Database.MariaDB = this.options;
         /** **
          * */
-        const MariaDBEngine = require("mariadb");
-        moment.locale("id");
+        this.MariaDBEngine = require("mariadb");
+        moment.locale("id ");
 
         switch (this.options.encryption.engine){
             case Options.ENCRYPTION_ENGINE_CRYPTO :
@@ -161,16 +158,16 @@ class MariaDB {
 
         switch (this.options.engine){
             case MariaDB.MARIADB_POOL :
-                this.DBInstance = MariaDBEngine.createPool(this.options);
+                this.DBInstance = this.MariaDBEngine.createPool(this.options);
                 break;
             case MariaDB.MARIADB_POOL_CLUSTER :
-                this.DBInstance = MariaDBEngine.createPoolCluster(this.options);
+                this.DBInstance = this.MariaDBEngine.createPoolCluster(this.options);
                 break;
             case MariaDB.MARIADB_CREATECONNECTION :
-                this.DBInstance = MariaDBEngine.createConnection(this.options);
+                this.DBInstance = this.MariaDBEngine.createConnection(this.options);
                 break;
             default :
-                this.DBInstance = MariaDBEngine.createPool(this.options);
+                this.DBInstance = this.MariaDBEngine.createPool(this.options);
                 break;
         }
     }
@@ -215,9 +212,18 @@ class MariaDB {
      */
     Create = async (TableName, Rules) => {
         this.#method = MariaDB.MARIADB_METHOD_CREATE;
-        let Rule = _.extend({
-            data : false,
-        }, Rules)
+        let Rule;
+        await import("lodash")
+            .then(async (_) => {
+                Rule = await _.extend({
+                    data : false,
+                }, Rules);
+            })
+            .catch(async (error) => {
+                Rule = { data : false };
+                await console.error({ status : false, code : 204, msg : "Module Lodash Not Found"});
+            })
+
 
         /** Load Encryption**/
         let mTableName = (this.options.encryption.enabled) ? await this.EncryptionModule.encodeIvSync(TableName) : TableName;
@@ -405,50 +411,57 @@ class MariaDB {
         const mDate = new Date();
         const filename = join(backupPath, `./${this.options.host}.${this.options.database}.${mDate.getDate()}-${mDate.getMonth()}-${mDate.getFullYear()}.sql.gz`);
         return await new Promise(async (resolve, rejected) => {
-            if (existsSync(backupPath)){
-                try {
-                    if (!existsSync(filename)){
-                        await mysqldump({
-                            connection: {
-                                host: this.options.host,
-                                user: this.options.user,
-                                password: this.options.password,
-                                database: this.options.database,
-                            },
-                            dumpToFile: filename
-                        });
-                        resolve({
-                            status : true,
-                            code : 200,
-                            msg : `Backup SQL Is Successfully in ${backupPath} `
-                        })
+            await import("fs")
+                .then(async (fs) => {
+                    if (fs.existsSync(backupPath)){
+                        try {
+                            if (!fs.existsSync(filename)){
+                                await mysqldump({
+                                    connection: {
+                                        host: this.options.host,
+                                        user: this.options.user,
+                                        password: this.options.password,
+                                        database: this.options.database,
+                                    },
+                                    dumpToFile: filename
+                                });
+                                resolve({
+                                    status : true,
+                                    code : 200,
+                                    msg : `Backup SQL Is Successfully in ${backupPath} `
+                                })
+                            }else{
+                                resolve({
+                                    status : true,
+                                    code : 200,
+                                    msg : "File Backup is Exist. Skip Save Connector"
+                                })
+                            }
+                        }catch (e) {
+                            rejected({
+                                status : false,
+                                code : 501,
+                                msg : "Error Detected",
+                                error : e
+                            })
+                        }
                     }else{
-                        resolve({
-                            status : true,
-                            code : 200,
-                            msg : "File Backup is Exist. Skip Save Connector"
-                        })
-                    }
-                }catch (e) {
-                    rejected({
-                        status : false,
-                        code : 501,
-                        msg : "Error Detected",
-                        error : e
-                    })
-                }
-            }else{
-                rejected({
-                    status : false,
-                    code : 500,
-                    msg : "Error Detected",
-                    error : `Folder Backup Not Detected in "${backupPath}". Please Create Folder Backup First`
-                });
-                /*mkdirSync(backupPath, {
-                    mode : '0777'
-                })*/
+                        rejected({
+                            status : false,
+                            code : 500,
+                            msg : "Error Detected",
+                            error : `Folder Backup Not Detected in "${backupPath}". Please Create Folder Backup First`
+                        });
+                        /*mkdirSync(backupPath, {
+                            mode : '0777'
+                        })*/
 
-            }
+                    }
+                })
+                .catch(async (error) => {
+                    rejected({ status : false, code : 500, msg : `Module Fs Not Found`, error : error})
+                })
+
 
 
 
@@ -619,7 +632,9 @@ class MariaDB {
                                             break;
                                         case MariaDB.MARIADB_METHOD_PROCEDURE :
                                             //###########################################################################
-                                            const mergerData = _.merge({ status : false, code : 505, metadata : metadata}, rows[0][0].response);
+                                            const mergerData = _.merge({ status : true, code : 200, metadata : metadata}, {
+                                                data : rows[0][0].response
+                                            });
                                             if (mergerData.status){
                                                 await resolve(mergerData);
                                             }else{
@@ -660,7 +675,7 @@ class MariaDB {
                                                 await rejected({status: false, code: 404, msg: `Succeeded, But No Data Found`, metadata : metadata});
                                             await conn.release();
                                             //------------------------------------------------------------------------------------------------------
-                                            await emojic.emojify(`:computer ${ansiColors.blue(`Release Connection Database Instance`)}`);
+                                            emojic.emojify(`:computer ${ansiColors.blue(`Release Connection Database Instance`)}`);
                                             //------------------------------------------------------------------------------------------------------
                                             //###########################################################################
                                             break;
@@ -678,7 +693,7 @@ class MariaDB {
                                             await rejected({ status: false, code: 500, msg: "Error Detected", error: { errorMsg : err.text, errorCode : err.code, errNo : err.errno }});
                                             await conn.release();
                                             //------------------------------------------------------------------------------------------------------
-                                            await emojic.emojify(`:computer ${ansiColors.blue(`Release Connection Database Instance`)}`);
+                                            emojic.emojify(`:computer ${ansiColors.blue(`Release Connection Database Instance`)}`);
                                         //------------------------------------------------------------------------------------------------------
                                     }
 

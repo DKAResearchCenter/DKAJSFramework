@@ -22,7 +22,6 @@ class mJwt {
         new Promise(async (resolve, rejected) => {
             const encr = new Security.Encryption.Crypto()
             const err2 = encr.encode(payload)
-            console.log(err2)
             await JWT.sign(err2, this.config.secretKey,this.config.signOption, async (error, token) => {
                 if (!error){
                     await resolve({ status : true, msg : "Successfully to Create Token", data : token});

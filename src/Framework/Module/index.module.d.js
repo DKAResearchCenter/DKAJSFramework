@@ -59,11 +59,12 @@ const DKA = {
     Hardware : Hardware,
     Api : Api,
     Version : mVersion,
+    Config : Config,
     get config() {
         return Config;
     },
     set config(config) {
-        Config = _.merge(Config, config)
+        let Config = _.merge(Config, config)
     }
 };
 /** Declalration Global Variable **/
@@ -72,5 +73,5 @@ global.Server = Server;
 global.DKAnum = 0;
 global.DKAServerConfig = [];
 
-export { Functions, Helper, Security, Database, Document, Server, Options, Networking, Hardware, Api, mVersion as Version };
+export { Functions, Helper, Security, Database, Document, Server, Options, Networking, Hardware, Api, Config, mVersion as Version };
 export default DKA;

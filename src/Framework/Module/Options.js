@@ -1,4 +1,3 @@
-import gpio from "gpio";
 import ansiColors from "ansi-colors";
 
 const Options = {
@@ -6,7 +5,6 @@ const Options = {
      * @type {JSON}
      */
     SERVER_CONFIG : {},
-
 
     SERVER_STATE_DEVELOPMENT : "dev",
     SERVER_STATE_PRODUCTION : "prod",
@@ -16,10 +14,14 @@ const Options = {
     FASTIFY_CORE_ENGINE : 3,
     RESTIFY_CORE_ENGINE : 4,
     REACTJS_CORE_ENGINE : 5,
+    SOCKETIO_CORE_ENGINE : 6,
     PHP_CORE_ENGINE : 6,
     PERL_CORE_ENGINE : 7,
     ANGULAR_CORE_ENGINE : 8,
     EXPO_CORE_ENGINE : 9,
+
+    SOCKET_CONNECT : "connection",
+    SOCKET_DISCONNECTED : "disconnect",
 
     VIEW_POV_EJS : 1,
     VIEW_POV_MUSTACHE : 2,
@@ -58,9 +60,9 @@ const Options = {
     RASPBERRYPI_CORE_CLI : "native",
     RASPBERRY_CORE_GPIO : "gpio",
 
-    GPIO_DIR_OUT : gpio.DIRECTION.OUT,
-    GPIO_DIR_HIGH : gpio.DIRECTION.HIGH,
-    GPIO_DIR_IN : gpio.DIRECTION.IN,
+    GPIO_DIR_OUT : 'out',
+    GPIO_DIR_IN : 'in',
+
     GPIO_DIR_UP : 'up',
     GPIO_DIR_DOWN : 'down',
     GPIO_EVENT_CHANGE : "change",

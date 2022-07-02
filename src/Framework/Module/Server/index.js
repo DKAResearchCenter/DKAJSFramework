@@ -1,8 +1,6 @@
 'use strict';
 'use warning';
 import _ from 'lodash';
-import Mac from "macaddress";
-import os from "os";
 import delay from "delay";
 import cliProgress from "cli-progress";
 import ansiColors from "ansi-colors";
@@ -10,6 +8,7 @@ import DKA from "./../index.module.d.js";
 import isElectron from "is-electron";
 import electronLog from "electron-log";
 import {existsSync} from "fs";
+import Config from "./../Config";
 import Options from "./../Options";
 
 /** Third Component Server Data Controller**/
@@ -17,16 +16,17 @@ import HTTPEngine from "./HTTP";
 import ReactEngine from "./REACT"
 import FastifyEngine from "./FASTIFY";
 import ExpressEngine from "./EXPRESS";
+import SocketIOEngine from "./SOCKET";
 /** End Third Component Server Data Controller **/
 /** Tunneling Data Controlling Tunel **/
-import mNgrok from "ngrok";
-import localtunnel from "localtunnel";
 /** End Tunneling Data Controlling Tunel **/
 import autoload from "./Autoloads";
 
 let mApp = null;
-let db = null;
-let electronInstance = null;
+/**
+ *
+ * @type {function<Socket>} co
+ */
 let configuration = {};
 
 global.mProgressBar = new cliProgress.Bar({
@@ -37,12 +37,12 @@ global.mProgressBar = new cliProgress.Bar({
 });
 
 /**
- * @constant
- * @type {Function}
- * @default
+ *
+ * @param {{app: boolean, settings: {localtunnel: boolean, pingInterval: number, reactCompress: boolean, cors: {origin: string}, reactHot: boolean, secretKey: string, firewall: [], connectTimeout: number, pingTimeout: number, perMessageDeflate: boolean, ngrok: {authToken: null, enabled: boolean}, reactOpen: boolean}, serverView: number, serverEngine: Number, serverName: *|null, serverPort: number, secure: boolean, serverHost: string, serverEnabled: Boolean, serverState: string, library: {socketIo: {cors: {origin: string}, perMessageDeflate: boolean}}, plugin: {FastifyGracefulShutdown: {options: {}, enabled: boolean}, FastifyCookie: {options: {}, enabled: boolean}, FastifyCors: {options: {origin: string}, enabled: boolean}, FastifyRateLimit: {options: {}, enabled: boolean}, FastifyJwt: {options: {}, enabled: boolean}, FastifyMultipart: {options: {}, enabled: boolean}, FastifyLog: {options: {}, enabled: boolean}, FastifyFormBody: {options: {}, enabled: boolean}, FastifyHelmet: {options: {contentSecurityPolicy: boolean}, enabled: boolean}, FastifyCompress: {options: {global: boolean}, enabled: boolean}, FastifySocketIO: {options: {cors: {origin: string}, perMessageDeflate: boolean}, enabled: boolean}, FastifyPointOfView: {options: {}, enabled: boolean}}, options: {layoutDir: string, distDir: string, backupDir: string, autoloadDir: string, uploadDir: string, appDir: string, srcDir: string, assetsDir: string, publicDir: string}, serverDomain: (Boolean|String), http2: boolean, Webpack: {mode: string, resolve: {extensions: string[]}, module: {rules: [{test: RegExp, use: {loader: string, options: {presets: string[], plugins: string[]}}, exclude: RegExp},{test: RegExp, use: string[]},{test: RegExp, use: [{loader: string},{loader: string}]}]}, target: string}}} config
+ * @return {Promise<Object>}
+ * @constructor
  */
-const Server = async (config) => {
-
+const Server = async (config = Config.Server) => {
     
     return await new Promise(async (resolve) => {
         //------------------------------------------------------------------------------------------------------
@@ -212,7 +212,25 @@ const Server = async (config) => {
                         await delay(Options.DELAY_TIME);
                     }).catch(async (error) => {
                         throw error;
-                    })
+                    });
+                return mApp;
+            case Options.SOCKETIO_CORE_ENGINE :
+                mApp = null;
+                await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "preparing socket IO engine"}) :
+                    mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "preparing socket IO engine"});
+                await delay(Options.DELAY_TIME);
+                await SocketIOEngine(configuration)
+                    .then(async (AppEngine) => {
+                        /**
+                         *
+                         */
+                        await configuration.app(AppEngine);
+                        mApp = AppEngine;
+                        await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "finish Socket IO engine"}) : mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "finish Socket IO engine"});
+                        await delay(Options.DELAY_TIME);
+                    }).catch(async (error) => {
+                        throw error;
+                    });
                 return mApp;
             default :
                 throw ' Server Engine Unknown';
@@ -227,37 +245,49 @@ const Server = async (config) => {
                 await delay(Options.DELAY_TIME);
                 return await new Promise (async (resolve, rejected) => {
                     await AppEngine.listen(configuration.serverPort, configuration.serverHost, async (err, address) => {
-
                         if (!err) {
                             if (configuration.settings.ngrok.enabled === true) {
-                                await mNgrok.connect({
-                                    addr : configuration.serverPort,
-                                    authtoken : configuration.settings.ngrok.authToken,
-                                    onStatusChange : _ => {
+                                import("ngrok")
+                                    .then(async (ngrok) => {
+                                        await ngrok.connect({
+                                            addr : configuration.serverPort,
+                                            authtoken : configuration.settings.ngrok.authToken,
+                                            onStatusChange : _ => {
 
-                                    }, onLogEvent : _ => {
+                                            }, onLogEvent : _ => {
 
-                                    }
-                                }).catch((e) => {
-                                    rejected(e.toString())
-                                });
+                                            }
+                                        }).catch((e) => {
+                                            rejected(e.toString())
+                                        });
 
-                                const api = await mNgrok.getApi();
+                                        const api = ngrok.getApi();
 
-                                await api.listTunnels().then(async (result) => {
-                                    const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi '${configuration.serverName}' Server Dengan Alamat ${address}`, Ngrok : [ result.tunnels[1].public_url, result.tunnels[0].public_url]});
-                                    await resolve(response);
-                                }).catch(async (error) => {
-                                    const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi '${configuration.serverName}' Server Dengan Alamat ${address}`, Ngrok : { error : error }});
-                                    await resolve(response);
-                                });
-                            } else if (configuration.settings.localtunnel) {
-                                const tunnel = await localtunnel({port: configuration.serverPort});
-                                const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi '${configuration.serverName}' Server Dengan Alamat ${address}`, Localtunnel : tunnel.url})
-                                await mProgressBar.increment( { state : Options.COMPLETE_STATE, descriptions : "Listening Service"});
-                                await delay(Options.DELAY_TIME);
-                                await resolve(response);
-                                await mProgressBar.stop()
+                                        await api.listTunnels().then(async (result) => {
+                                            const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi '${configuration.serverName}' Server Dengan Alamat ${address}`, Ngrok : [ result.tunnels[1].public_url, result.tunnels[0].public_url]});
+                                            await resolve(response);
+                                        }).catch(async (error) => {
+                                            const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi '${configuration.serverName}' Server Dengan Alamat ${address}`, Ngrok : { error : error }});
+                                            await resolve(response);
+                                        });
+                                    })
+                                    .catch(async (error) => {
+                                        rejected({ status : false, code : 500, msg : `module "ngrok" not exist or not Installed. please install ngrok module`, error : error});
+                                    })
+                            }else if (configuration.settings.localtunnel) {
+                                import("localtunnel")
+                                    .then(async (localtunnel) => {
+                                        const tunnel = await localtunnel({port: configuration.serverPort});
+                                        const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi '${configuration.serverName}' Server Dengan Alamat ${address}`, Localtunnel : tunnel.url})
+                                        await mProgressBar.increment( { state : Options.COMPLETE_STATE, descriptions : "Listening Service"});
+                                        await delay(Options.DELAY_TIME);
+                                        await resolve(response);
+                                        await mProgressBar.stop()
+                                    })
+                                    .catch(async (error) => {
+                                        rejected({ status : false, code : 500, msg : `module "localtunnel" not exist or not Installed. please install localtunnel module`, error : error});
+                                    })
+
                             } else {
                                 const response = JSON.stringify({ status : true, msg : "Berhasil", text : `Aplikasi '${configuration.serverName}' Server Dengan Alamat ${address}`});
                                 await mProgressBar.increment( { state : Options.COMPLETE_STATE, descriptions : "Listening Service"});
@@ -283,6 +313,23 @@ const Server = async (config) => {
                         console.log(error)
                     })
                 break;
+            case Options.SOCKETIO_CORE_ENGINE :
+                /** Melakukan Pengecekan Apakah State Server Adalah Development Atau Produksi **/
+                await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "Listening Service"}) :
+                    mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Listening Service"});
+                await delay(Options.DELAY_TIME);
+                return await new Promise (async (resolve, rejected) => {
+                    try {
+                        await AppEngine.listen(configuration.serverPort);
+                        await mProgressBar.increment( { state : Options.COMPLETE_STATE, descriptions : "Listening Service"});
+                        await delay(Options.DELAY_TIME);
+                        await resolve({status : true, code : 200, msg : `Successfully To Running Server Socket Io Engine`})
+                        await mProgressBar.stop();
+                    }catch (e) {
+                        await rejected({ status : false, code : 500, msg : `Error Running Server Socket Io Engine`, error : error})
+                        await mProgressBar.stop();
+                    }
+                })
             default :
                 throw "Server Engine Not Found"
         }

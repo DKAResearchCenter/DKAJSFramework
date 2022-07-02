@@ -6,7 +6,7 @@
  * @returns {Promise<unknown>}
  */
 export default (config) => new Promise(async (resolve, reject) => {
-    const AppEngine = require("express")();
+    const AppEngine = await require("express")();
     await resolve(AppEngine);
 }).then( async (AppEngine) => {
     return AppEngine
