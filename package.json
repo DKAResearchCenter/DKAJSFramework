@@ -1,6 +1,6 @@
 {
   "name": "dkaframework",
-  "version": "1.0.375",
+  "version": "1.0.381",
   "description": "The Multi Function Base Program Interpreter",
   "main": "dist/Framework/Module/index.module.d.js",
   "author": "Yovangga Anandhika",
@@ -49,9 +49,9 @@
     "yarn-audit-fix": "^9.2.2"
   },
   "dependencies": {
-    "@babel/cli": "^7.17.6",
-    "@babel/core": "^7.18.2",
-    "@babel/node": "^7.16.8",
+    "@babel/cli": "^7.18.6",
+    "@babel/core": "^7.18.6",
+    "@babel/node": "^7.18.6",
     "@babel/plugin-proposal-class-properties": "^7.16.7",
     "@babel/plugin-proposal-export-default-from": "^7.16.7",
     "@babel/plugin-proposal-private-methods": "^7.16.11",
