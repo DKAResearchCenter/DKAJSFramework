@@ -1,16 +1,13 @@
 #!/usr/bin/env node
 const mPackage = require("./../../../package.json");
 const path = require("path");
-const babel = require("@babel/core");
 const nodemon = require("nodemon");
-const { spawn } = require('child_process');
 const { Command } = require("commander");
-const net = require("net");
 const program = new Command();
 
 (async () => {
     let nodemonInst = null;
-
+    let debug = false;
     await program
         .version(mPackage.version)
         .arguments("<file>")
@@ -30,6 +27,7 @@ const program = new Command();
                 if (options.nodemon !== undefined){
                     const finalScript = `${watchOpt} --exec${babelOpt}${configBabel} ${file}`;
                     if (options.debug !== undefined){
+                        debug = true
                         console.log(`#### --- nodemon ${finalScript} --- ####`);
                     }
 
@@ -38,6 +36,7 @@ const program = new Command();
                 }else{
                     const finalScript = `${watchOpt} --exec${babelOpt}${configBabel} ${file}`;
                     if (options.debug !== undefined){
+                        debug = true;
                         console.log(`#### --- node ${finalScript} --- ####`);
                     }
                     nodemonInst = await nodemon(finalScript)
@@ -48,6 +47,7 @@ const program = new Command();
                     console.log(`DKA Engine V.${mPackage.version}. Program Starting ...`);
                 }).on('crash', function (e) {
                     console.log(`DKA Program Has Detecting Crash ...`);
+                    console.log(e);
                     //process.exit(1);
                 }).on('quit', function () {
                     console.log(`DKA Program V.${mPackage.version} Has Quit ...`);
@@ -59,5 +59,12 @@ const program = new Command();
 
         });
 
-    await program.parse(process.argv);
+    await process.on("SIGINT", async () => {
+        if (debug) { console.log("DKA Program In Signint"); }
+        process.exit();
+    });
+
+    await program.parse(process.argv,{
+
+    })
 })();
