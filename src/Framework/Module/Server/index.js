@@ -224,7 +224,7 @@ const Server = async (config = Config.Server) => {
                         /**
                          *
                          */
-                        await configuration.app(AppEngine);
+                        await configuration.app(AppEngine.io);
                         mApp = AppEngine;
                         await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "finish Socket IO engine"}) : mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "finish Socket IO engine"});
                         await delay(Options.DELAY_TIME);
@@ -301,17 +301,28 @@ const Server = async (config = Config.Server) => {
                         }
                     })
 
+                }).then ((result) => {
+                    if (configuration.serverState === Options.SERVER_STATE_DEVELOPMENT){
+                        console.log(result)
+                    }
+                }).catch(async (error) => {
+                    if (configuration.serverState === Options.SERVER_STATE_DEVELOPMENT){
+                        console.error(error)
+                    }
                 });
             case Options.REACTJS_CORE_ENGINE :
                 await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "start engine webpackDev"}) :
                     mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "start engine webpackDev"});
                 await delay(Options.DELAY_TIME);
-                await AppEngine.start()
-                    .then(async (res) => {
-                        console.log(res)
-                    }).catch(async (error) => {
-                        console.log(error)
-                    })
+                await AppEngine.start().then ((result) => {
+                    if (configuration.serverState === Options.SERVER_STATE_DEVELOPMENT){
+                        console.log(result)
+                    }
+                }).catch(async (error) => {
+                    if (configuration.serverState === Options.SERVER_STATE_DEVELOPMENT){
+                        console.error(error)
+                    }
+                });
                 break;
             case Options.SOCKETIO_CORE_ENGINE :
                 /** Melakukan Pengecekan Apakah State Server Adalah Development Atau Produksi **/
@@ -319,17 +330,26 @@ const Server = async (config = Config.Server) => {
                     mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Listening Service"});
                 await delay(Options.DELAY_TIME);
                 return await new Promise (async (resolve, rejected) => {
-                    try {
-                        await AppEngine.listen(configuration.serverPort);
-                        await mProgressBar.increment( { state : Options.COMPLETE_STATE, descriptions : "Listening Service"});
-                        await delay(Options.DELAY_TIME);
-                        await resolve({status : true, code : 200, msg : `Successfully To Running Server Socket Io Engine`})
-                        await mProgressBar.stop();
-                    }catch (e) {
-                        await rejected({ status : false, code : 500, msg : `Error Running Server Socket Io Engine`, error : error})
-                        await mProgressBar.stop();
+                    await AppEngine.http.listen(configuration.serverPort,configuration.serverHost, async (error) => {
+                        if (!error){
+                            await mProgressBar.increment( { state : Options.COMPLETE_STATE, descriptions : "Listening Service"});
+                            await delay(Options.DELAY_TIME);
+                            await resolve({status : true, code : 200, msg : `Successfully To Running Server Socket Io Engine`})
+                            await mProgressBar.stop();
+                        }else{
+                            await rejected({ status : false, code : 500, msg : `Error Running Server Socket Io Engine`, error : error})
+                            await mProgressBar.stop();
+                        }
+                    });
+                }).then ((result) => {
+                    if (configuration.serverState === Options.SERVER_STATE_DEVELOPMENT){
+                        console.log(result)
                     }
-                })
+                }).catch(async (error) => {
+                    if (configuration.serverState === Options.SERVER_STATE_DEVELOPMENT){
+                        console.error(error)
+                    }
+                });
             default :
                 throw "Server Engine Not Found"
         }
