@@ -1,9 +1,17 @@
-import JWT from "jsonwebtoken";
 import fs from "fs";
 import path from "path";
 import {Security} from "./../../../index.module.d"
 
 import _ from "lodash";
+
+function checkModuleExist(name){
+    try {
+        require.resolve(name);
+        return true;
+    }catch (e) {
+        return false;
+    }
+}
 
 class mJwt {
 
@@ -22,6 +30,7 @@ class mJwt {
         new Promise(async (resolve, rejected) => {
             const encr = new Security.Encryption.Crypto()
             const err2 = encr.encode(payload)
+            let JWT = (checkModuleExist("jsonwebtoken")) ? require("jsonwebtoken") : null;
             await JWT.sign(err2, this.config.secretKey,this.config.signOption, async (error, token) => {
                 if (!error){
                     await resolve({ status : true, msg : "Successfully to Create Token", data : token});
@@ -33,6 +42,7 @@ class mJwt {
 
     verify = async (token) =>
         new Promise(async (resolve, rejected) => {
+            let JWT = (checkModuleExist("jsonwebtoken")) ? require("jsonwebtoken") : null;
             await JWT.verify(token, this.config.secretKey, this.config.signOption, async (error, token) => {
                 if (!error){
                     await resolve({ status : true, msg : "Successfully to Create Token", data : token});
