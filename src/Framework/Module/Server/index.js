@@ -17,6 +17,8 @@ import ReactEngine from "./REACT"
 import FastifyEngine from "./FASTIFY";
 import ExpressEngine from "./EXPRESS";
 import SocketIOEngine from "./SOCKET";
+import UDP from "./UDP";
+import ELECTRON from "./ELECTRON";
 /** End Third Component Server Data Controller **/
 /** Tunneling Data Controlling Tunel **/
 /** End Tunneling Data Controlling Tunel **/
@@ -219,7 +221,7 @@ const Server = async (config = Config.Server) => {
                 await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "preparing socket IO engine"}) :
                     mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "preparing socket IO engine"});
                 await delay(Options.DELAY_TIME);
-                await SocketIOEngine(configuration)
+                await SocketIOEngine.Server(configuration)
                     .then(async (AppEngine) => {
                         /**
                          *
@@ -227,6 +229,50 @@ const Server = async (config = Config.Server) => {
                         await configuration.app(AppEngine.io);
                         mApp = AppEngine;
                         await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "finish Socket IO engine"}) : mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "finish Socket IO engine"});
+                        await delay(Options.DELAY_TIME);
+                    }).catch(async (error) => {
+                        throw error;
+                    });
+                return mApp;
+            case Options.SOCKETIO_CLIENT_ENGINE :
+                mApp = null;
+                await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "preparing socket IO client"}) :
+                    mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "preparing socket IO client"});
+                await delay(Options.DELAY_TIME);
+                await SocketIOEngine.Client(configuration)
+                    .then(async (AppEngine) => {
+                        await configuration.app(AppEngine.io);
+                        mApp = AppEngine;
+                        await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "finish Socket IO client"}) : mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "finish Socket IO engine"});
+                        await delay(Options.DELAY_TIME);
+                    }).catch(async (error) => {
+                        throw error;
+                    });
+                return mApp;
+            case Options.UPD_CORE_ENGINE :
+                mApp = null;
+                await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "preparing socket IO client"}) :
+                    mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "preparing socket IO client"});
+                await delay(Options.DELAY_TIME);
+                await UDP.Server(configuration)
+                    .then(async (AppEngine) => {
+                        await configuration.app(AppEngine);
+                        mApp = AppEngine;
+                        await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "finish Socket IO client"}) : mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "finish Socket IO engine"});
+                        await delay(Options.DELAY_TIME);
+                    }).catch(async (error) => {
+                        throw error;
+                    });
+                return mApp;
+            case Options.ELECTRON_CORE_ENGINE :
+                mApp = null;
+                await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "preparing socket IO client"}) :
+                    mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "preparing socket IO client"});
+                await delay(Options.DELAY_TIME);
+                await ELECTRON(configuration)
+                    .then(async (AppEngine) => {
+                        mApp = AppEngine;
+                        await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "finish Socket IO client"}) : mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "finish Socket IO engine"});
                         await delay(Options.DELAY_TIME);
                     }).catch(async (error) => {
                         throw error;
@@ -340,6 +386,68 @@ const Server = async (config = Config.Server) => {
                             await rejected({ status : false, code : 500, msg : `Error Running Server Socket Io Engine`, error : error})
                             await mProgressBar.stop();
                         }
+                    });
+                }).then ((result) => {
+                    if (configuration.serverState === Options.SERVER_STATE_DEVELOPMENT){
+                        console.log(result)
+                    }
+                }).catch(async (error) => {
+                    if (configuration.serverState === Options.SERVER_STATE_DEVELOPMENT){
+                        console.error(error)
+                    }
+                });
+            case Options.SOCKETIO_CLIENT_ENGINE :
+                /** Melakukan Pengecekan Apakah State Server Adalah Development Atau Produksi **/
+                await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "Listening Service"}) :
+                    mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Listening Service"});
+                await delay(Options.DELAY_TIME);
+                return await new Promise (async (resolve, rejected) => {
+                    await mProgressBar.increment( { state : Options.COMPLETE_STATE, descriptions : "Listening Service"});
+                    await delay(Options.DELAY_TIME);
+                    await resolve({status : true, code : 200, msg : `Successfully To Running Server Socket Io Client`})
+                    await mProgressBar.stop();
+                }).then ((result) => {
+                    if (configuration.serverState === Options.SERVER_STATE_DEVELOPMENT){
+                        console.log(result)
+                    }
+                }).catch(async (error) => {
+                    if (configuration.serverState === Options.SERVER_STATE_DEVELOPMENT){
+                        console.error(error)
+                    }
+                });
+            case Options.UPD_CORE_ENGINE :
+                /** Melakukan Pengecekan Apakah State Server Adalah Development Atau Produksi **/
+                await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "Listening Service"}) :
+                    mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Listening Service"});
+                await delay(Options.DELAY_TIME);
+                return await new Promise (async (resolve, rejected) => {
+                    AppEngine.on("listening", async () => {
+                        await mProgressBar.increment( { state : Options.COMPLETE_STATE, descriptions : "Listening Service"});
+                        await delay(Options.DELAY_TIME);
+                        await resolve({status : true, code : 200, msg : `Successfully To Running Server UDP Engine`})
+                        await mProgressBar.stop();
+                    })
+                    AppEngine.bind({ port : configuration.serverPort, address : configuration.serverHost, exclusive : configuration.settings.exclusive })
+                }).then ((result) => {
+                    if (configuration.serverState === Options.SERVER_STATE_DEVELOPMENT){
+                        console.log(result)
+                    }
+                }).catch(async (error) => {
+                    if (configuration.serverState === Options.SERVER_STATE_DEVELOPMENT){
+                        console.error(error)
+                    }
+                });
+            case Options.ELECTRON_CORE_ENGINE :
+                /** Melakukan Pengecekan Apakah State Server Adalah Development Atau Produksi **/
+                await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "Listening Service"}) :
+                    mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "Listening Service"});
+                await delay(Options.DELAY_TIME);
+                return await new Promise (async (resolve, rejected) => {
+                    AppEngine.on("spawn", async () => {
+                        await mProgressBar.increment( { state : Options.COMPLETE_STATE, descriptions : "Listening Service"});
+                        await delay(Options.DELAY_TIME);
+                        await resolve({status : true, code : 200, msg : `Successfully To Running Server UDP Engine`})
+                        await mProgressBar.stop();
                     });
                 }).then ((result) => {
                     if (configuration.serverState === Options.SERVER_STATE_DEVELOPMENT){

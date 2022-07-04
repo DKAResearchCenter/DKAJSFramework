@@ -1,9 +1,8 @@
 import Server from "./Server";
 import Client from "./Client";
 
-const SOCKET = {
+const UDP = {
     Server : Server,
     Client : Client
 };
-
-export default SOCKET;
+export default UDP;

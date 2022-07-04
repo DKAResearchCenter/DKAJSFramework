@@ -23,6 +23,7 @@ import Networking from "./Networking";
 import Options from "./Options";
 import Hardware from "./Hardware";
 import Api from "./Api";
+import Utils from "./Utils";
 import {throws} from "assert";
 import path from "path";
 
@@ -60,6 +61,7 @@ const DKA = {
     Api : Api,
     Version : mVersion,
     Config : Config,
+    Utils : Utils,
     get config() {
         return Config;
     },
@@ -73,5 +75,5 @@ global.Server = Server;
 global.DKAnum = 0;
 global.DKAServerConfig = [];
 
-export { Functions, Helper, Security, Database, Document, Server, Options, Networking, Hardware, Api, Config, mVersion as Version };
+export { Functions, Helper, Security, Database, Document, Server, Options, Networking, Hardware, Api, Utils, Config, mVersion as Version };
 export default DKA;

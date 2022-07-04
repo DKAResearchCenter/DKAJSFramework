@@ -6,10 +6,9 @@ import mConfig from "../../../Config";
 
 class Firestore {
 
-
     /**
      * @param {Object} config
-     * @return firebase.firestore.Firestore
+     * @return firestore.Firestore.Firestore
      */
     constructor(config) {
         this.config = _.extend(mConfig.FirebaseConfig, config);

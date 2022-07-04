@@ -167,6 +167,7 @@ const Config = {
             reactHot : true,
             reactCompress : false,
             firewall : [],
+            exclusive : false,
             /** Ngrok Tunneling **/
             ngrok : {
                 enabled : false,

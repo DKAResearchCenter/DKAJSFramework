@@ -24,7 +24,7 @@ const Base = async () => {
     });
 
     return new Promise(async (resolve, rejected) => {
-        const rootProject = await path.join(process.cwd());
+        const rootProject = path.join(process.cwd());
         const envPath = path.join(process.cwd(),"./config.env");
         const packageJson = await JSON.parse(readFileSync(path.join(rootProject, "./package.json"),'utf-8'));
         await dotEnv.config({

@@ -15,10 +15,13 @@ const Options = {
     RESTIFY_CORE_ENGINE : 4,
     REACTJS_CORE_ENGINE : 5,
     SOCKETIO_CORE_ENGINE : 6,
-    PHP_CORE_ENGINE : 6,
-    PERL_CORE_ENGINE : 7,
-    ANGULAR_CORE_ENGINE : 8,
-    EXPO_CORE_ENGINE : 9,
+    SOCKETIO_CLIENT_ENGINE : 7,
+    PHP_CORE_ENGINE : 8,
+    PERL_CORE_ENGINE : 9,
+    ANGULAR_CORE_ENGINE : 10,
+    EXPO_CORE_ENGINE : 11,
+    UPD_CORE_ENGINE : 12,
+    ELECTRON_CORE_ENGINE : 13,
 
     SOCKET_CONNECT : "connection",
     SOCKET_DISCONNECTED : "disconnect",
@@ -56,6 +59,11 @@ const Options = {
     WARNING_STATE : `${ansiColors.bgYellow('Warning')}`,
 
     DELAY_TIME : 10,
+
+    TIME_DAYS_TYPE : "DAYS",
+    TIME_MINUTES_TYPE : "MINUTES",
+    TIME_HOURS_TYPE : "HOURS",
+    TIME_SECONDS_TYPE : "SECONDS",
 
     RASPBERRYPI_CORE_CLI : "native",
     RASPBERRY_CORE_GPIO : "gpio",
