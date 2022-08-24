@@ -2,8 +2,10 @@ import Crypto from "crypto";
 import _ from "lodash";
 import {Options} from "./../../../index.module.d"
 
-
-class index {
+/**
+ *
+ */
+class crypto {
     constructor(Config) {
         this.Config = _.extend({
             algorithm : Options.ALGORITHM_AES_256_GCM,
@@ -13,6 +15,11 @@ class index {
 
     }
 
+    /**
+     *
+     * @param {String} text
+     * @return {Promise<unknown>}
+     */
     encodeIv =  async (text) =>
         new Promise(async (resolve, rejected) => {
             await new Promise(async (resolve2, rejected) => {
@@ -142,4 +149,4 @@ class index {
     }
 }
 
-export default index;
+export default crypto;

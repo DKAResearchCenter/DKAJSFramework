@@ -5,7 +5,7 @@ import Firewall from "./Firewall";
 import Encryption from "./Encryption";
 
 /** Security System Data Class  **/
-var Security = {
+const Security = {
     Firewall : Firewall,
     Encryption : Encryption
 };

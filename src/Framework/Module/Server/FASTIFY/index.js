@@ -15,7 +15,6 @@ export default async(config) => {
      * Jika True, Maka Server Menampilkan Log System, Jika Tidak Mematikan Mode Logger
      *
      */
-
     function checkModuleExist(name){
         try {
             require.resolve(name);
@@ -73,7 +72,7 @@ export default async(config) => {
                     let AppEngine = await require("fastify")(mSetting);
                     await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "require [Fastify] core engine Development"}) :
                         mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "require [Fastify] core engine Development"});
-                    await delay(Options.DELAY_TIME);d
+                    await delay(Options.DELAY_TIME);
                     resolve(AppEngine);
                 }else{
                     await rejected({ status : false, code : 500, msg : `Module Fastify Server Engine is Not Found`});
@@ -172,11 +171,7 @@ export default async(config) => {
             await delay(Options.DELAY_TIME);
 
             if(checkModuleExist("@fastify/rate-limit")){
-                mAppEngine = await AppEngine.register(require("@fastify/rate-limit"), {
-                    global : true,
-                    max: 1000,
-                    timeWindow: '1 minute'
-                });
+                mAppEngine = await AppEngine.register(require("@fastify/rate-limit"), config.plugin.FastifyRateLimit.options);
                 await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "rate limit plugin"}) :
                     mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "rate limit plugin"});
                 await delay(Options.DELAY_TIME);
@@ -339,7 +334,7 @@ export default async(config) => {
                 await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "JWT Tokens plugin"}) :
                     mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "JWT Tokens plugin"});
                 await delay(Options.DELAY_TIME);
-                await resolve({ status : false, code : 500, msg : `JWT Plugin Enabled But Not Found`});
+                await resolve({ status : true, code : 500, msg : `JWT Plugin Enabled But Not Found`});
             }else{
                 await (isElectron()) ? electronLog.info({ state : Options.ERROR_STATE, descriptions : "JWT Tokens plugin Not Found"}) :
                     mProgressBar.increment( { state : Options.ERROR_STATE, descriptions : "JWT Tokens plugin Not Found"});
@@ -430,7 +425,39 @@ export default async(config) => {
     let mAppEngine = null;
     await ServerInstance
         .then(async (AppEngine) => {
-            await SocketIOInstance(AppEngine)
+            await Promise.all([
+                SocketIOInstance(AppEngine),
+                ServerViewInstance(AppEngine),
+                CorsInstance(AppEngine),
+                RateLimitInstance(AppEngine),
+                MultipartInstance(AppEngine),
+                CookieInstance(AppEngine),
+                CompressInstance(AppEngine),
+                HelmetInstance(AppEngine),
+                LoggingInstance(AppEngine),
+                GracefulShutdownInstance(AppEngine),
+                JWTInstance(AppEngine),
+                FormBodyInstance(AppEngine),
+                AssetDirInstance(AppEngine),
+                UploadDirInstance(AppEngine)
+            ]).then(async (res) => {
+                if (config.serverState === Options.SERVER_STATE_DEVELOPMENT){
+                    await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "All Plugin Are Successfully"}) :
+                        mProgressBar.increment( { state : Options.LOADED_STATE, descriptions : "All Plugin Are Successfully"});
+                    //console.log("Success loaded Plugin")
+                }
+
+            }).catch(async (error) => {
+                if (config.serverState === Options.SERVER_STATE_DEVELOPMENT){
+                    await (isElectron()) ? electronLog.info({ state : Options.ERROR_STATE, descriptions : `Error Loaded Plugin ${error}`}) :
+                        mProgressBar.increment( { state : Options.ERROR_STATE, descriptions : `Error Loaded Plugin ${error}`});
+                    //console.log(error)
+                }
+            })
+            //#####################
+            mAppEngine = AppEngine;
+            //#####################
+            /*await SocketIOInstance(AppEngine)
                 .then(async (AppEngine) => {
                     await ServerViewInstance(AppEngine)
                         .then(async (AppEngine) => {
@@ -500,7 +527,7 @@ export default async(config) => {
                         });
                 }).catch(async (error) => {
                     throw error;
-                });
+                });*/
         })
         .catch(async (error) => {
             await process.exit(1);

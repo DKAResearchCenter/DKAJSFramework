@@ -1,7 +1,7 @@
 
 
 const Electron = async (config) => {
-    const electron = require("electron/cli");
+    const electron = require("electron");
 
 
     return await new Promise(async (resolve, rejected) => {

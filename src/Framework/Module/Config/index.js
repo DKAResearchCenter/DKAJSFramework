@@ -179,6 +179,9 @@ const Config = {
             pingInterval : 1000,
             connectTimeout : 2000,
             perMessageDeflate : false,
+            timeout : 5000,
+            getTimeInterval : null,
+            autoSetTime : undefined,
             maxListeners : 100,
             cors: {
                 origin: '*',
@@ -211,7 +214,7 @@ const Config = {
               }
             },
             FastifyMultipart : {
-                enabled : true,
+                enabled : false,
                 options : {
 
                 }
@@ -223,21 +226,23 @@ const Config = {
                 }
             },
             FastifyPointOfView : {
-              enabled : true,
+              enabled : false,
               options : {
 
               }
             },
             FastifyCors : {
-                enabled : true,
+                enabled : false,
                 options : {
                     origin : '*'
                 }
             },
             FastifyRateLimit : {
-              enabled : true,
-              options : {
-
+              enabled : false,
+              options :  {
+                  global : true,
+                  max: 1000,
+                  timeWindow: '1 minute'
               }
             },
             FastifyGracefulShutdown : {
@@ -245,7 +250,7 @@ const Config = {
                 options : {}
             },
             FastifyLog : {
-                enabled : true,
+                enabled : false,
                 options : {
 
                 }

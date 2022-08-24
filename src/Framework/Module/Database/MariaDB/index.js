@@ -239,8 +239,6 @@ class MariaDB {
                 this.mKey.push(` \`${(this.options.encryption.enabled && this.options.encryption.options.column) ? this.EncryptionModule.encodeIvSync(`${key}`) : key}\` `);
                 this.mVal.push(`"${(this.options.encryption.enabled && this.options.encryption.options.column) ? this.EncryptionModule.encodeIvSync(`${Rule.data[key]}`) : Rule.data[key]}"`);
             });
-
-
             let SqlScript = `INSERT INTO \`${mTableName}\` (${this.mKey}) VALUES (${this.mVal}) `;
             this.#returnedResult = await this.rawQuerySync(SqlScript, []);
         } else {

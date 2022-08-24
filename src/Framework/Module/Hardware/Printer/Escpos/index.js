@@ -1,23 +1,23 @@
 'use strict';
 'use warning';
 import DKA, {Options} from "./../../../index.module.d";
-import mEscpos from "escpos";
-import mEscposUsb from "escpos-usb";
-import mEscposNetwork from "escpos-network";
-import mEscposSerial from "escpos-serialport";
 import _ from "lodash";
-
-mEscpos.USB = mEscposUsb;
-mEscpos.network = mEscposNetwork;
-mEscpos.serial = mEscposSerial;
 let configEscposGlobally;
 
+function checkModuleExist(name){
+    try {
+        require.resolve(name);
+        return true;
+    }catch (e) {
+        return false;
+    }
+}
 
 class Escpos {
 
     constructor(config) {
         this.config = _.merge(DKA.config.Hardware.Printer.Escpos, config );
-
+        let mEscpos = require("escpos");
         return new Promise(async (resolve, rejected) => {
             switch (this.config.type){
                 case Options.ESCPOS_TYPE_USB :
@@ -26,6 +26,7 @@ class Escpos {
                     //##################################################################
                     /** Find The Printer Function */
                     try {
+                        mEscpos.USB = checkModuleExist("escpos-usb") ? require("escpos-usb") : console.error("MODULE `escpos-usb` not installed. please Installed First");
                         if (mEscpos.USB.findPrinter().length > 0){
                             this.device = (this.config.settings.usb.vendorId !== undefined && this.config.settings.usb.productId !== undefined)
                                 ? await new mEscpos.USB(this.config.settings.usb.vendorId, this.config.settings.usb.productId)
@@ -61,6 +62,7 @@ class Escpos {
                     /** Parsing The Network Function For The Data Type Communication **/
                     /** End Parsing The Network Function For The Data Type Communication **/
                     //#########################################################################################
+                    mEscpos.network = checkModuleExist("escpos-network") ? require("escpos-network") : console.error("MODULE `escpos-network` not installed. please Installed First");
                     this.device = new mEscpos.network(this.config.settings.network.ipAddress, this.config.settings.network.port);
                     this.printer = new mEscpos.Printer(this.device, this.config.options);
 
@@ -68,6 +70,7 @@ class Escpos {
                 case Options.ESCPOS_TYPE_SERIAL :
                     /** Start Parsing The Serial Function For The Data Type Communication **/
                     /** End Start Parsing The Serial Function For The Data Type Communication **/
+                    mEscpos.serial = checkModuleExist("escpos-serialport") ? require("escpos-serialport") : console.error("MODULE `escpos-serialport` not installed. please Installed First");
                     this.device = (this.config.settings.serial.settings !== undefined)
                         ? new mEscpos.serial(this.config.settings.serial.port, this.config.settings.serial.settings)
                         : new mEscpos.serial(this.config.settings.serial.port);
@@ -85,9 +88,7 @@ class Escpos {
                     });
                     break;
                 case Options.ESCPOS_TYPE_BLUETOOTH :
-
-
-
+                    console.log(`type printer connection not available now`)
                     break;
                 default :
                     /** Parsing The USB Function For The Data Type Communication **/
@@ -95,6 +96,7 @@ class Escpos {
                     //##################################################################
                     /** Find The Printer Function */
                     try {
+                        mEscpos.USB = checkModuleExist("escpos-usb") ? require("escpos-usb") : console.error("MODULE `escpos-usb` not installed. please Installed First");
                         if (mEscpos.USB.findPrinter().length > 0){
                             this.device = (this.config.settings.usb.vendorId !== undefined && this.config.settings.usb.productId !== undefined)
                                 ? await new mEscpos.USB(this.config.settings.usb.vendorId, this.config.settings.usb.productId)

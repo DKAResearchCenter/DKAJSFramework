@@ -22,6 +22,8 @@ const Options = {
     EXPO_CORE_ENGINE : 11,
     UPD_CORE_ENGINE : 12,
     ELECTRON_CORE_ENGINE : 13,
+    NTP_CORE_ENGINE : 14,
+    NTP_CLIENT_ENGINE : 15,
 
     SOCKET_CONNECT : "connection",
     SOCKET_DISCONNECTED : "disconnect",
@@ -30,6 +32,9 @@ const Options = {
     VIEW_POV_MUSTACHE : 2,
 
     HOST_LOCALHOST : 1,
+
+    MIFARE_CLASSIC_1K : "mifare_classic_1k",
+    MIFARE_CLASSIC_4K : "mifare_classic_4k",
 
     FIREWALL_NAT_SRC : "srcnat",
     FIREWALL_NAT_DST : "dstnat",

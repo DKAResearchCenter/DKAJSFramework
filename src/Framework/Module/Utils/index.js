@@ -4,37 +4,35 @@ import Options from "./../Options";
 const Utils = {
     /**
      *
-     * @param {Object} settings
-     * @param {Object} settings.data
-     * @return {Promise<void>}
+     * @param {Object} config
+     * @param {Object} config.data
+     * @return {{finalCost: {allCostRemaining: number}}}
      */
-    estimationCostFromTime : async (settings) => {
+    estimationCostFromTime : async (config) => {
         let mCostConfig = _.merge({
             data: {},
-            settings: {
-                minutes: {
-                    enabled: true,
-                    cost: 100,
-                    costMax: 500
+            settings : {
+                minutes : {
+                    cost: 2000,
+                    costMax: 2000
                 },
-                hours: {
-                    enabled: true,
+                hours : {
                     cost: 2000,
                     costMax: 10000
                 },
-                days: {
-                    enabled: true,
+                days : {
                     cost: 10000,
                     costMax: 100000
                 }
             }
-        }, settings);
+        }, config);
 
         let costBase = {};
 
+
         let mSettings = mCostConfig.settings;
         Object.keys(mSettings).map(async (key) => {
-            if (mSettings[key].enabled && mCostConfig.data[key]) {
+            if (mCostConfig.data[key] !== undefined) {
                 let mBaseKey = mCostConfig.data[key] * mSettings[key].cost;
                 let mTempContentBase = {};
                 mTempContentBase.data = mCostConfig.data[key];
@@ -51,19 +49,12 @@ const Utils = {
         let finalCost = {
             allCostRemaining: 0
         };
-        Object.keys(costBase).map(async (key, index) => {
+        Object.keys(costBase).forEach(async (key, index) => {
             finalCost.allCostRemaining += costBase[key].estimationCost;
         });
-        console.log(_.merge(costBase, {finalCost}));
-
+        return _.merge(costBase, {finalCost})
     },
-    estimationCostTaxFromTime : async (settings) => {
-        let mSettings = await _.merge({
-            data : {
-                
-            }
-        },settings)
-    }
+    
 }
 
 

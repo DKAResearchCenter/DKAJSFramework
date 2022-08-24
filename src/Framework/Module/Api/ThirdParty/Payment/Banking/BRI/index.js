@@ -67,7 +67,7 @@ class BRI {
                 : rejected(res.data);
             }).catch(async (error) => {
                 rejected(error);
-                console.log(mHeader);
+                //console.log(mHeader);
             });
 
         })
@@ -102,7 +102,7 @@ class BRI {
                         : rejected(res.data);
                 }).catch(async (error) => {
                     rejected(error);
-                    console.log(mHeader);
+                    //console.log(mHeader);
                 });
             })
 

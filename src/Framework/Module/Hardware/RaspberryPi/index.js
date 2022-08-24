@@ -35,18 +35,21 @@ class RaspberryPi {
             defaultLower : false
         }, config);
 
+        function checkModuleExist(name){
+            try {
+                require.resolve(name);
+                return true;
+            }catch (e) {
+                return false;
+            }
+        }
 
         switch (this.config.engine) {
             case RaspberryPi.ENGINE_JHONNYFIVE :
                 //this.engineInstance = new Board();
                 break;
             case RaspberryPi.ENGINE_GPIO_LIBRARY :
-                import("gpio")
-                    .then(async (gpio) => {
-                        this.engineInstance = gpio;
-                    }).catch(async (error) => {
-                      throw Error("MODULE GPIO NOT EXISTS OR NOT INSTALLED. PLEASE INSTALLED FIRST");
-                });
+                this.engineInstance = checkModuleExist("gpio") ? require("gpio") : throw Error("MODULE GPIO NOT EXISTS OR NOT INSTALLED. PLEASE INSTALLED FIRST");
                 break;
             default :
                 //this.engineInstance = new Board();
@@ -61,7 +64,8 @@ class RaspberryPi {
      * @param {Boolean}defaultLower
      * @returns {Promise<Object>} the return Response
      */
-    export = async (pin, settings , defaultLower = this.config.defaultLower) => await new Promise(async (resolve, rejected) => {
+    export = async (pin, settings , defaultLower =
+        this.config.defaultLower) => await new Promise(async (resolve, rejected) => {
         if (isPi.sync()){
             this.settingsExport = await _.extend({
                 direction : Options.GPIO_DIR_OUT,
