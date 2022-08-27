@@ -1,11 +1,17 @@
+
 import Crypto from "crypto";
 import _ from "lodash";
 import {Options} from "./../../../index.module.d"
 
 /**
+ * @class crypto
+ * The CryptoEncryption
  *
  */
 class crypto {
+
+    Config = null;
+
     constructor(Config) {
         this.Config = _.extend({
             algorithm : Options.ALGORITHM_AES_256_GCM,
@@ -145,7 +151,7 @@ class crypto {
         return Chiper.toString('base64');
     }
     decodeGeneral = (text) => {
-        const Chiper = Crypto
+        /** Work In Next Update **/
     }
 }
 

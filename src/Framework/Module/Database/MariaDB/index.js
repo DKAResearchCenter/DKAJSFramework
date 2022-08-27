@@ -1,5 +1,10 @@
 'use strict';
 'use warning';
+
+import cluster from "node:cluster";
+import { cpus } from 'node:os';
+
+
 import DKA, {Config, Options, Security, Server} from "./../../index.module.d.js";
 import {join} from "path";
 import mysqldump from 'mysqldump';
@@ -91,6 +96,9 @@ class MariaDB {
         return 3;
     };
 
+    static get CPU_NUMBER_CORE(){
+        return cpus().length;
+    }
     /***
      *
      * @returns {number}
@@ -140,7 +148,6 @@ class MariaDB {
          * */
         this.MariaDBEngine = require("mariadb");
         moment.locale("id ");
-
         switch (this.options.encryption.engine){
             case Options.ENCRYPTION_ENGINE_CRYPTO :
                 this.EncryptionModule = new Security.Encryption.Crypto({
@@ -155,7 +162,6 @@ class MariaDB {
         //------------------------------------------------------------------------------------------------------
         emojic.emojify(`:computer ${ansiColors.blue(`Prepare MariaDB Connection`)}`);
         //------------------------------------------------------------------------------------------------------
-
         switch (this.options.engine){
             case MariaDB.MARIADB_POOL :
                 this.DBInstance = this.MariaDBEngine.createPool(this.options);

@@ -1,6 +1,10 @@
 'use strict';
 'use warning';
 import _ from 'lodash';
+
+import cluster from "node:cluster";
+import { cpus } from 'node:os';
+
 import delay from "delay";
 import cliProgress from "cli-progress";
 import ansiColors from "ansi-colors";
@@ -10,7 +14,6 @@ import electronLog from "electron-log";
 import {existsSync} from "fs";
 import Config from "./../Config";
 import Options from "./../Options";
-import moment from "moment-timezone";
 
 /** Third Component Server Data Controller**/
 import HTTPEngine from "./HTTP";
@@ -21,13 +24,14 @@ import SocketIOEngine from "./SOCKET";
 import UDP from "./UDP";
 import ELECTRON from "./ELECTRON";
 import NTP from "./NTP";
+import PHP from "./PHP";
 /** End Third Component Server Data Controller **/
 /** Tunneling Data Controlling Tunel **/
 /** End Tunneling Data Controlling Tunel **/
 import autoload from "./Autoloads";
-import {DateTimeControl} from "set-system-clock";
 
 let mApp = null;
+const numCPUs = cpus().length;
 /**
  *
  * @type {function<Socket>} co
@@ -310,6 +314,11 @@ const Server = async (config = Config.Server) => {
                     })
                 mProgressBar.stop();
                 return true;
+            case Options.PHP_CORE_ENGINE :
+                await (isElectron()) ? electronLog.info({ state : Options.LOADING_STATE, descriptions : "preparing PHP Server engine"}) :
+                    mProgressBar.increment( { state : Options.LOADING_STATE, descriptions : "preparing Server engine"});
+                await delay(Options.DELAY_TIME);
+                return await PHP(configuration);
             default :
                 throw ' Server Engine Unknown';
         }
@@ -523,8 +532,9 @@ const Server = async (config = Config.Server) => {
                 });
             case Options.NTP_CLIENT_ENGINE :
                 return true;
-                break;
                 /** Melakukan Pengecekan Apakah State Server Adalah Development Atau Produksi **/
+            case Options.PHP_CORE_ENGINE :
+                return AppEngine;
             default :
                 throw "Server Engine Not Found"
         }

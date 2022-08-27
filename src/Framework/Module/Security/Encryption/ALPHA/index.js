@@ -3,7 +3,6 @@ import _ from "lodash";
 class AlphaCrypt {
 
     /**
-     *
      * @param {Object} config
      * @param {String} config.secretKey
      */

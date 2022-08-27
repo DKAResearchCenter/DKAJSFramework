@@ -49,12 +49,11 @@ const Utils = {
         let finalCost = {
             allCostRemaining: 0
         };
-        Object.keys(costBase).forEach(async (key, index) => {
+        for (const key of Object.keys(costBase)) {
             finalCost.allCostRemaining += costBase[key].estimationCost;
-        });
+        }
         return _.merge(costBase, {finalCost})
     },
-    
 }
 
 

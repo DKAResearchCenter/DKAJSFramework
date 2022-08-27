@@ -1,6 +1,6 @@
 {
   "name": "dkaframework",
-  "version": "1.0.390",
+  "version": "1.0.391",
   "description": "The Multi Function Base Program Interpreter",
   "main": "dist/Framework/Module/index.module.d.js",
   "author": "Yovangga Anandhika",
@@ -181,6 +181,9 @@
     "webpack-dev-server": "^4.8.1",
     "yargs": "^17.4.1",
     "yarn": "^1.22.18"
+  },
+  "resolutions": {
+    "usb" : "^1.8.8"
   },
   "engines": {
     "npm": ">=8.5.1"

@@ -13,37 +13,22 @@ class RaspberryPi {
     static get ENGINE_JHONNYFIVE(){
         return 1;
     }
-
     static get ENGINE_GPIO_LIBRARY(){
         return 2;
     }
 
-    /**
-     *
-     * @type {{}}
-     */
+    /** @type {{}} */
     mPortArray = {};
 
-    /**
-     *
-     * @param config
-     */
+    /** @param config */
     constructor(config) {
         this.mPortArray = {};
-        this.config = _.extend({
-            engine : RaspberryPi.ENGINE_GPIO_LIBRARY,
-            defaultLower : false
-        }, config);
-
+        this.config = _.extend({ engine : RaspberryPi.ENGINE_GPIO_LIBRARY, defaultLower : false }, config);
+        /** Function For Module Checking **/
         function checkModuleExist(name){
-            try {
-                require.resolve(name);
-                return true;
-            }catch (e) {
-                return false;
-            }
+            try { require.resolve(name); return true; }catch (e) { return false; }
         }
-
+        /** Auto Detection Engine Instance**/
         switch (this.config.engine) {
             case RaspberryPi.ENGINE_JHONNYFIVE :
                 //this.engineInstance = new Board();
@@ -58,14 +43,12 @@ class RaspberryPi {
     }
 
     /**
-     *
      * @param {Number} pin the gpio number board
      * @param {{ direction : String, interval : Number}} settings - for setting gpio options
      * @param {Boolean}defaultLower
      * @returns {Promise<Object>} the return Response
      */
-    export = async (pin, settings , defaultLower =
-        this.config.defaultLower) => await new Promise(async (resolve, rejected) => {
+    export = async (pin, settings , defaultLower = this.config.defaultLower) => await new Promise(async (resolve, rejected) => {
         if (isPi.sync()){
             this.settingsExport = await _.extend({
                 direction : Options.GPIO_DIR_OUT,
@@ -220,7 +203,6 @@ class RaspberryPi {
                                     /*await mArray[key].instance.set();
                                     await mDelay(delay);
                                     await mArray[key].instance.set(0);*/
-
                                 }else{
                                     await execSync(`gpio -g write ${pin} 0`);
                                     setTimeout(async () => {

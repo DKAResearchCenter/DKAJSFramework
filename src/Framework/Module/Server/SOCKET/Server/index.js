@@ -1,3 +1,5 @@
+import cluster from "node:cluster";
+
 import Options from "../../../Options";
 import delay from "delay";
 import Config from "../../../Config";
@@ -19,6 +21,8 @@ const Server  = async (config = Config.Server) => new Promise(async (resolve, re
         //"development" | "production" | "none"
         let serverState = (config.serverState === Options.SERVER_STATE_DEVELOPMENT) ? "development" :
             (config.serverState === Options.SERVER_STATE_PRODUCTION) ? "production" : "none";
+
+        const numCPUs = require("os").cpus().length;
 
         await mProgressBar.increment({state: Options.LOADING_STATE, descriptions: "merged setting for socket io engine"});
         await delay(Options.DELAY_TIME);
@@ -42,7 +46,7 @@ const Server  = async (config = Config.Server) => new Promise(async (resolve, re
             await (isElectron()) ? electronLog.info({ state : Options.ERROR_STATE, descriptions : "module socket.io not exist. please install first for use"}) :
                 mProgressBar.increment( { state : Options.ERROR_STATE, descriptions : "module socket.io not exist. please install first for use"});
             await delay(Options.DELAY_TIME);
-            await rejected({ status : false, code : 500, msg : `Engine Socket Server Io error Imported`, error : reason });
+            await reject({ status : false, code : 500, msg : `Engine Socket Server Io error Imported`, error : reason });
         });
         //################################################
         await (isElectron()) ? electronLog.info({ state : Options.LOADED_STATE, descriptions : "socket.io loaded"}) :

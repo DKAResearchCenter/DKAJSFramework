@@ -192,7 +192,6 @@ class Nfc {
     }
 
     /**
-     *
      * @param { "UNKNOWN_ERROR" | "FATAL_ERROR" | "NFC_ERROR" | "READER_ERROR" | "READER_END" | "READER" | "CARD_DETECTED" | "CARD_OFF"  } event
      * @param {Function} callback
      * @returns {Promise<Nfc>}
@@ -223,7 +222,13 @@ class Nfc {
         return this;
     }
 
-
+    /**
+     * @param { number | undefined } keyNumber
+     * @param { number } key
+     * @param { function } response
+     * @return {Promise<void>}
+     * @constructor
+     */
     LoadAuthentificationKey = async (keyNumber, key, response) => {
         await this.mEventEmitter.on("card", async (result) => {
             let reader = result.reader;
